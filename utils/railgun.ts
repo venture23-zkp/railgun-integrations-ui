@@ -23,9 +23,6 @@ export const loadProviders = async () => {
   );
 };
 
-// LevelDOWN compatible database for storing encrypted wallets.
-const db = new BrowserLevel('');
-
 const setLogging = () => {
   const logMessage = console.log;
   const logError = console.error;
@@ -43,7 +40,7 @@ const artifactStore = new ArtifactStore(
   async (path: string) => (await localforage.getItem(path)) != null
 );
 
-export const initialize = () => {
+export const initialize = (db: BrowserLevel<string, string>) => {
   // Name for your wallet implementation.
   // Encrypted and viewable in private transaction history.
   // Maximum of 16 characters, lowercase.

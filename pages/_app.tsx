@@ -41,7 +41,15 @@ const wagmiClient = createClient({
 });
 
 function MyApp({ Component, pageProps }: AppProps) {
-  useMemo(initialize, []);
+  
+  useMemo(() => {
+    import("browser-level").then(({ BrowserLevel }) => {
+      // LevelDOWN compatible database for storing encrypted wallets.
+      const db = new BrowserLevel('');
+        initialize(db);
+      });
+  }, []);
+  
   const { isProviderLoaded, shieldingFees } = useRailgunProvider();
   return (
     <>
