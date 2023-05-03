@@ -25,4 +25,14 @@ const Home = ({ recipientAddress }: { recipientAddress?: string }) => {
   );
 };
 
+// export const getServerSideProps: GetServerSideProps = async () => {
+//   // Since for now, index does not have any content to show, app will redirect automatically to /swap
+//   return {
+//     redirect: {
+//       destination: '/swap',
+//       permanent: true,
+//     },
+//   };
+// };
+
 export default Home;

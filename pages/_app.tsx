@@ -9,6 +9,7 @@ import '@rainbow-me/rainbowkit/styles.css';
 import { WagmiConfig, createClient } from 'wagmi';
 import Footer from '@/components/Footer';
 import Header from '@/components/Header';
+import Sidebar from '@/components/Sidebar';
 import { TokenListProvider } from '@/contexts/TokenContext';
 import { useRailgunProvider } from '@/hooks/useRailgunProvider';
 import '@/styles/globals.css';
@@ -68,7 +69,10 @@ function MyApp({ Component, pageProps }: AppProps) {
           <ChakraProvider theme={theme}>
             {isProviderLoaded && (
               <TokenListProvider shieldingFees={shieldingFees}>
-                <Grid
+                <Sidebar>
+                  <Component {...pageProps} />
+                </Sidebar>
+                {/* <Grid
                   templateAreas={`". header ."
                                   ". body ."
 									                ". footer ."
@@ -88,7 +92,7 @@ function MyApp({ Component, pageProps }: AppProps) {
                   <GridItem area={'footer'}>
                     <Footer />
                   </GridItem>
-                </Grid>
+                </Grid> */}
               </TokenListProvider>
             )}
           </ChakraProvider>
