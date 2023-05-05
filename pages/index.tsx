@@ -1,11 +1,12 @@
 import { Image } from '@chakra-ui/image';
 import { Flex, Heading } from '@chakra-ui/layout';
 import { TxForm } from '@/components/TxForm';
+import { GetServerSideProps } from 'next';
 
 const Home = ({ recipientAddress }: { recipientAddress?: string }) => {
   return (
     <Flex direction="column" align="center" justify="center">
-      <Heading as="h1" size="2xl" mb="1rem">
+      {/* <Heading as="h1" size="2xl" mb="1rem">
         TokenShielder
       </Heading>
       <Image
@@ -20,19 +21,19 @@ const Home = ({ recipientAddress }: { recipientAddress?: string }) => {
         Use your crypto wallet of choice to transfer tokens directly into a RAILGUN Private 0zk
         balance.
       </Heading>
-      <TxForm recipientAddress={recipientAddress} />
+      <TxForm recipientAddress={recipientAddress} /> */}
     </Flex>
   );
 };
 
-// export const getServerSideProps: GetServerSideProps = async () => {
-//   // Since for now, index does not have any content to show, app will redirect automatically to /swap
-//   return {
-//     redirect: {
-//       destination: '/swap',
-//       permanent: true,
-//     },
-//   };
-// };
+export const getServerSideProps: GetServerSideProps = async () => {
+  // Since for now, index does not have any content to show, app will redirect automatically to /swap
+  return {
+    redirect: {
+      destination: '/liquidityPool',
+      permanent: true,
+    },
+  };
+};
 
 export default Home;

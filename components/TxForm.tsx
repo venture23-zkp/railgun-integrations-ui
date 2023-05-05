@@ -57,16 +57,16 @@ export const TxForm = ({ recipientAddress }: { recipientAddress?: string }) => {
   const [selectedToken, setSelectedToken] = useState<TokenListContextItem>(tokenList[0]);
   const [validAddress, setValidAddress] = useState(false);
   const [tokenAmount, setTokenAmount] = useState<string>('');
-  const { config } = usePrepareContractWrite({
-    address: selectedToken?.address,
-    abi: erc20ABI,
-    functionName: 'approve',
-    args: [
-      getRailgunSmartWalletContractForNetwork(network.railgunNetworkName).address as `0x{string}`,
-      ethers.utils.parseUnits(tokenAmount || '0', selectedToken?.decimals),
-    ],
-  });
-  const { writeAsync: doErc20Approval } = useContractWrite(config);
+  // const { config } = usePrepareContractWrite({
+  //   address: selectedToken?.address,
+  //   abi: erc20ABI,
+  //   functionName: 'approve',
+  //   args: [
+  //     getRailgunSmartWalletContractForNetwork(network.railgunNetworkName).address as `0x{string}`,
+  //     ethers.utils.parseUnits(tokenAmount || '0', selectedToken?.decimals),
+  //   ],
+  // });
+  // const { writeAsync: doErc20Approval } = useContractWrite(config);
   const [isApprovalLoading, setIsApprovalLoading] = useState(false);
   const { data } = useTokenAllowance({ address: selectedToken?.address || '' });
   const tokenAllowance =
@@ -231,26 +231,26 @@ export const TxForm = ({ recipientAddress }: { recipientAddress?: string }) => {
             width="100%"
             isDisabled={!isConnected || chain?.unsupported || isApprovalLoading}
             onClick={async () => {
-              if (!doErc20Approval) {
-                notifyUser({
-                  alertType: 'error',
-                  message:
-                    'Page is not prepared for ERC20 approval. Please try again in a few seconds',
-                });
-                return;
-              }
-              setIsApprovalLoading(true);
-              const tx = await doErc20Approval().catch((err) => console.error(err));
-              if (tx) {
-                await txNotify(tx.hash);
-                mutate((key) => typeof key === 'string' && key.startsWith('useTokenAllowance'));
-              } else {
-                notifyUser({
-                  alertType: 'error',
-                  message: 'Failed to approve token',
-                });
-              }
-              setIsApprovalLoading(false);
+              // if (!doErc20Approval) {
+              //   notifyUser({
+              //     alertType: 'error',
+              //     message:
+              //       'Page is not prepared for ERC20 approval. Please try again in a few seconds',
+              //   });
+              //   return;
+              // }
+              // setIsApprovalLoading(true);
+              // const tx = await doErc20Approval().catch((err) => console.error(err));
+              // if (tx) {
+              //   await txNotify(tx.hash);
+              //   mutate((key) => typeof key === 'string' && key.startsWith('useTokenAllowance'));
+              // } else {
+              //   notifyUser({
+              //     alertType: 'error',
+              //     message: 'Failed to approve token',
+              //   });
+              // }
+              // setIsApprovalLoading(false);
             }}
           >
             Approve

@@ -15,7 +15,7 @@ export interface TokenListItem {
 
 export const useTokenList = () => {
   const { chain } = useNetwork();
-  const chainId = chain?.id || 1; // default to mainnet if no chain id
+  const chainId = chain?.id || 80001; // default to mainnet if no chain id
   const network = getNetwork(chainId);
   const tokenList = tokenListJson.tokens
     .filter((token) => token.chainId === chainId)
