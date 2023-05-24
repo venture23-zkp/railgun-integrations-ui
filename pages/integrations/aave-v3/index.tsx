@@ -1,10 +1,15 @@
 import LiquidityPool from "@/components/liquidityPool";
-import { useState } from 'react';
-import { Stack, Card, Box, Heading, CardBody, Text, Flex, Divider, ButtonGroup, Button, CardFooter } from '@chakra-ui/react'
+import { useEffect, useState } from 'react';
+import { Stack, Card, Box, Heading, CardBody, Text, Flex, IconButton } from '@chakra-ui/react'
+import { AddIcon } from '@chakra-ui/icons';
 import { shortenAddress } from "@/utils/address";
+import AddressContractManager from "@/abi/AddressContractManager.json";
+import { readContracts } from '@wagmi/core';
+import SetupACModal from "./SetupACModal";
 
 const AaveV3 = () => {
   const [selectedNFT, setSelectedNFT] = useState<NftType>();
+  const [isSetupACModalOpen, setIsSetupACModalOpen] = useState<boolean>(false);
 
   if (selectedNFT) {
     <LiquidityPool nft={selectedNFT} />;
@@ -14,11 +19,23 @@ const AaveV3 = () => {
         <Heading as="h1" size="2xl" mb="1rem">
           AAVE V3
         </Heading>
-        <Box display={"flex"} justifyContent={"center"} alignItems={"center"} height={"100vh"}>
-          <Box w="42rem" className="container" maxHeight='32rem' overflow={'scroll'}>
+        <Box display={"flex"} justifyContent={"center"} alignItems={"center"} minH={"100vh"}>
+          <Box w="42rem" className="container"
+          // maxHeight='32rem'
+          // overflow={'scroll'}
+          >
             <NFTLists onClick={(nft: NftType) => { setSelectedNFT(nft) }} />
+            <IconButton
+              colorScheme='blue'
+              aria-label='Search database'
+              w="100%"
+              marginTop={'12px'}
+              icon={<AddIcon />}
+              onClick={() => { setIsSetupACModalOpen(true) }}
+            />
           </Box>
         </Box>
+        <SetupACModal isOpen={isSetupACModalOpen} onClose={() => { setIsSetupACModalOpen(false) }} />
       </Flex>
     )
   }
@@ -39,7 +56,19 @@ const nfts: NftType[] = [
     contractAddress: '0x1CFFC31408461d036227F53384B49b80d8580F19'
   },
   {
-    id: 54,
+    id: 56,
+    contractAddress: '0x1CFFC31408461d036227F53384B49b80d8580F19'
+  },
+  {
+    id: 76,
+    contractAddress: '0x1CFFC31408461d036227F53384B49b80d8580F19'
+  },
+  {
+    id: 234,
+    contractAddress: '0x1CFFC31408461d036227F53384B49b80d8580F19'
+  },
+  {
+    id: 98,
     contractAddress: '0x1CFFC31408461d036227F53384B49b80d8580F19'
   },
   {
@@ -47,13 +76,13 @@ const nfts: NftType[] = [
     contractAddress: '0x1CFFC31408461d036227F53384B49b80d8580F19'
   },
   {
-    id: 54,
+    id: 34534,
     contractAddress: '0x1CFFC31408461d036227F53384B49b80d8580F19'
   },
   {
-    id: 54,
+    id: 6564564,
     contractAddress: '0x1CFFC31408461d036227F53384B49b80d8580F19'
-  }
+  },
 ]
 
 type NFTListsPropsType = {
