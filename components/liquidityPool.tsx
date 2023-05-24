@@ -5,7 +5,7 @@ import { FormControl, FormErrorMessage, FormLabel } from '@chakra-ui/form-contro
 import { CopyIcon } from '@chakra-ui/icons';
 import { Input, InputGroup } from '@chakra-ui/input';
 import { Box, Flex, Text } from '@chakra-ui/layout';
-import { useDisclosure } from '@chakra-ui/react';
+import { useDisclosure, Tab, TabList, Tabs, TabPanel, TabPanels } from '@chakra-ui/react';
 import { Textarea } from '@chakra-ui/textarea';
 import { getRailgunSmartWalletContractForNetwork } from '@railgun-community/quickstart';
 import { validateRailgunAddress } from '@railgun-community/quickstart';
@@ -26,6 +26,7 @@ import { UNSTOPPABLE_DOMAIN_SUFFIXES, VALID_AMOUNT_REGEX, ethAddress } from '@/u
 import { buildBaseToken, getNetwork } from '@/utils/networks';
 import { endsWithAny } from '@/utils/string';
 import { isAmountParsable } from '@/utils/token';
+import AcmNftType from "@/types/AcmNftType";
 
 type LiquidityPoolValues = {
     recipient: string;
@@ -38,7 +39,7 @@ enum ETab {
     WITHDRAW = 2,
 }
 
-const LiquidityPool = ({ recipientAddress }: { recipientAddress?: string }) => {
+const LiquidityPool = ({ recipientAddress, acmNft }: { recipientAddress?: string, acmNft: AcmNftType }) => {
     const { tokenAllowances, tokenList } = useToken();
     const { mutate } = useSWRConfig();
     const { chain } = useNetwork();
@@ -124,7 +125,7 @@ const LiquidityPool = ({ recipientAddress }: { recipientAddress?: string }) => {
     return (
         <Box display={"flex"} justifyContent={"center"} alignItems={"center"} height={"100vh"}>
             <Box maxWidth="24rem" className="container">
-                <Box
+                {/* <Box
                     marginBottom="30px"
                     display="flex"
                     flexDirection="row"
@@ -132,11 +133,16 @@ const LiquidityPool = ({ recipientAddress }: { recipientAddress?: string }) => {
                 >
                     <Button colorScheme={selectedTab === ETab.DEPOSIT ? "teal" : "gray"} variant="link" onClick={() => setSelectedTab(ETab.DEPOSIT)}>Deposit</Button>
                     <Button colorScheme={selectedTab === ETab.WITHDRAW ? "teal" : "gray"} variant="link" onClick={() => setSelectedTab(ETab.WITHDRAW)}>Withdraw</Button>
-                </Box>
-                {
-                    selectedTab === ETab.DEPOSIT &&
-                    <form onSubmit={onSubmit}>
-                        {/* <FormControl isInvalid={Boolean(errors.recipient?.message)}>
+                </Box> */}
+                <Tabs variant='soft-rounded' colorScheme='teal'>
+                    <TabList>
+                        <Tab>Deposit</Tab>
+                        <Tab>Withdraw</Tab>
+                    </TabList>
+                    <TabPanels>
+                        <TabPanel>
+                            <form onSubmit={onSubmit}>
+                                {/* <FormControl isInvalid={Boolean(errors.recipient?.message)}>
               <Flex justify="space-between">
                 <FormLabel>Recipient address</FormLabel>
 
@@ -190,68 +196,68 @@ const LiquidityPool = ({ recipientAddress }: { recipientAddress?: string }) => {
                 {errors.recipient && errors.recipient.message}
               </FormErrorMessage>
             </FormControl> */}
-                        <FormControl isInvalid={Boolean(errors.token?.message)} mt=".5rem">
-                            <FormLabel>Token</FormLabel>
-                            <TokenInput
-                                {...register('token')}
-                                onSelect={(token) => {
-                                    setValue('token', token.name);
-                                    setSelectedToken(token);
-                                }}
-                            />
-                        </FormControl>
-                        <FormControl isInvalid={Boolean(errors.amount?.message)}>
-                            <FormLabel>Amount</FormLabel>
-                            <InputGroup size="lg" width="auto" height="4rem">
-                                <Input
-                                    variant="outline"
-                                    size="lg"
-                                    pr="4.5rem"
-                                    height="100%"
-                                    placeholder="0.1"
-                                    {...register('amount', {
-                                        required: 'This is required',
-                                        onChange: (e) => {
-                                            const isParseable = isAmountParsable(e.target.value, selectedToken.decimals);
-                                            if (
-                                                e.target.value &&
-                                                !isNaN(e.target.value) &&
-                                                VALID_AMOUNT_REGEX.test(e.target.value) &&
-                                                isParseable
-                                            ) {
-                                                setTokenAmount(e.target.value);
-                                            }
-                                        },
-                                        validate: (value) => {
-                                            try {
-                                                if (!VALID_AMOUNT_REGEX.test(value) && isNaN(parseFloat(value))) {
-                                                    return 'Not a valid number';
-                                                }
+                                <FormControl isInvalid={Boolean(errors.token?.message)} mt=".5rem">
+                                    <FormLabel>Token</FormLabel>
+                                    <TokenInput
+                                        {...register('token')}
+                                        onSelect={(token) => {
+                                            setValue('token', token.name);
+                                            setSelectedToken(token);
+                                        }}
+                                    />
+                                </FormControl>
+                                <FormControl isInvalid={Boolean(errors.amount?.message)}>
+                                    <FormLabel>Amount</FormLabel>
+                                    <InputGroup size="lg" width="auto" height="4rem">
+                                        <Input
+                                            variant="outline"
+                                            size="lg"
+                                            pr="4.5rem"
+                                            height="100%"
+                                            placeholder="0.1"
+                                            {...register('amount', {
+                                                required: 'This is required',
+                                                onChange: (e) => {
+                                                    const isParseable = isAmountParsable(e.target.value, selectedToken.decimals);
+                                                    if (
+                                                        e.target.value &&
+                                                        !isNaN(e.target.value) &&
+                                                        VALID_AMOUNT_REGEX.test(e.target.value) &&
+                                                        isParseable
+                                                    ) {
+                                                        setTokenAmount(e.target.value);
+                                                    }
+                                                },
+                                                validate: (value) => {
+                                                    try {
+                                                        if (!VALID_AMOUNT_REGEX.test(value) && isNaN(parseFloat(value))) {
+                                                            return 'Not a valid number';
+                                                        }
 
-                                                return (
-                                                    Boolean(
-                                                        parseUnits(value || '0', selectedToken?.decimals).gt(BigNumber.from('0'))
-                                                    ) || 'Amount must be greater than 0'
-                                                );
-                                            } catch (e) {
-                                                return 'Not a valid number';
-                                            }
-                                        },
-                                    })}
-                                />
-                            </InputGroup>
-                            <FormErrorMessage my=".25rem">{errors.amount && errors.amount.message}</FormErrorMessage>
-                        </FormControl>
-                        <Button
-                            isDisabled={!isConnected || chain?.unsupported}
-                            // type="Deposit"
-                            size="lg"
-                            mt=".75rem"
-                            width="100%"
-                        >
-                            Deposit
-                        </Button>
-                        {/* {needsApproval ? (
+                                                        return (
+                                                            Boolean(
+                                                                parseUnits(value || '0', selectedToken?.decimals).gt(BigNumber.from('0'))
+                                                            ) || 'Amount must be greater than 0'
+                                                        );
+                                                    } catch (e) {
+                                                        return 'Not a valid number';
+                                                    }
+                                                },
+                                            })}
+                                        />
+                                    </InputGroup>
+                                    <FormErrorMessage my=".25rem">{errors.amount && errors.amount.message}</FormErrorMessage>
+                                </FormControl>
+                                <Button
+                                    isDisabled={!isConnected || chain?.unsupported}
+                                    // type="Deposit"
+                                    size="lg"
+                                    mt=".75rem"
+                                    width="100%"
+                                >
+                                    Deposit
+                                </Button>
+                                {/* {needsApproval ? (
               <Button
                 size="lg"
                 mt=".75rem"
@@ -293,108 +299,109 @@ const LiquidityPool = ({ recipientAddress }: { recipientAddress?: string }) => {
                 Shield
               </Button>
             )} */}
-                        {selectedToken && (
-                            <ReviewTransactionModal
-                                isOpen={isReviewOpen}
-                                onClose={closeReview}
-                                recipient={recipient}
-                                displayName={recipientDisplayName}
-                                token={selectedToken}
-                                amount={tokenAmount}
-                                onSubmitClick={() => {
-                                    reset((values) => ({
-                                        ...values,
-                                        recipient: values.recipient,
-                                        amount: '',
-                                    }));
-                                }}
-                            />
-                        )}
-                    </form>
-                }
-                {
-                    selectedTab === ETab.WITHDRAW &&
-                    <form onSubmit={onSubmit}>
-                        <FormControl isInvalid={Boolean(errors.token?.message)} mt=".5rem">
-                            <FormLabel>Token</FormLabel>
-                            <TokenInput
-                                {...register('token')}
-                                onSelect={(token) => {
-                                    setValue('token', token.name);
-                                    setSelectedToken(token);
-                                }}
-                            />
-                        </FormControl>
-                        <FormControl isInvalid={Boolean(errors.amount?.message)}>
-                            <FormLabel>Amount</FormLabel>
-                            <InputGroup size="lg" width="auto" height="4rem">
-                                <Input
-                                    variant="outline"
-                                    size="lg"
-                                    pr="4.5rem"
-                                    height="100%"
-                                    placeholder="0.1"
-                                    {...register('amount', {
-                                        required: 'This is required',
-                                        onChange: (e) => {
-                                            const isParseable = isAmountParsable(e.target.value, selectedToken.decimals);
-                                            if (
-                                                e.target.value &&
-                                                !isNaN(e.target.value) &&
-                                                VALID_AMOUNT_REGEX.test(e.target.value) &&
-                                                isParseable
-                                            ) {
-                                                setTokenAmount(e.target.value);
-                                            }
-                                        },
-                                        validate: (value) => {
-                                            try {
-                                                if (!VALID_AMOUNT_REGEX.test(value) && isNaN(parseFloat(value))) {
-                                                    return 'Not a valid number';
-                                                }
+                                {selectedToken && (
+                                    <ReviewTransactionModal
+                                        isOpen={isReviewOpen}
+                                        onClose={closeReview}
+                                        recipient={recipient}
+                                        displayName={recipientDisplayName}
+                                        token={selectedToken}
+                                        amount={tokenAmount}
+                                        onSubmitClick={() => {
+                                            reset((values) => ({
+                                                ...values,
+                                                recipient: values.recipient,
+                                                amount: '',
+                                            }));
+                                        }}
+                                    />
+                                )}
+                            </form>
+                        </TabPanel>
+                        <TabPanel>
+                            <form onSubmit={onSubmit}>
+                                <FormControl isInvalid={Boolean(errors.token?.message)} mt=".5rem">
+                                    <FormLabel>Token</FormLabel>
+                                    <TokenInput
+                                        {...register('token')}
+                                        onSelect={(token) => {
+                                            setValue('token', token.name);
+                                            setSelectedToken(token);
+                                        }}
+                                    />
+                                </FormControl>
+                                <FormControl isInvalid={Boolean(errors.amount?.message)}>
+                                    <FormLabel>Amount</FormLabel>
+                                    <InputGroup size="lg" width="auto" height="4rem">
+                                        <Input
+                                            variant="outline"
+                                            size="lg"
+                                            pr="4.5rem"
+                                            height="100%"
+                                            placeholder="0.1"
+                                            {...register('amount', {
+                                                required: 'This is required',
+                                                onChange: (e) => {
+                                                    const isParseable = isAmountParsable(e.target.value, selectedToken.decimals);
+                                                    if (
+                                                        e.target.value &&
+                                                        !isNaN(e.target.value) &&
+                                                        VALID_AMOUNT_REGEX.test(e.target.value) &&
+                                                        isParseable
+                                                    ) {
+                                                        setTokenAmount(e.target.value);
+                                                    }
+                                                },
+                                                validate: (value) => {
+                                                    try {
+                                                        if (!VALID_AMOUNT_REGEX.test(value) && isNaN(parseFloat(value))) {
+                                                            return 'Not a valid number';
+                                                        }
 
-                                                return (
-                                                    Boolean(
-                                                        parseUnits(value || '0', selectedToken?.decimals).gt(BigNumber.from('0'))
-                                                    ) || 'Amount must be greater than 0'
-                                                );
-                                            } catch (e) {
-                                                return 'Not a valid number';
-                                            }
-                                        },
-                                    })}
-                                />
-                            </InputGroup>
-                            <FormErrorMessage my=".25rem">{errors.amount && errors.amount.message}</FormErrorMessage>
-                        </FormControl>
-                        <Button
-                            isDisabled={!isConnected || chain?.unsupported}
-                            // type="Deposit"
-                            size="lg"
-                            mt=".75rem"
-                            width="100%"
-                        >
-                            Withdraw
-                        </Button>
-                        {selectedToken && (
-                            <ReviewTransactionModal
-                                isOpen={isReviewOpen}
-                                onClose={closeReview}
-                                recipient={recipient}
-                                displayName={recipientDisplayName}
-                                token={selectedToken}
-                                amount={tokenAmount}
-                                onSubmitClick={() => {
-                                    reset((values) => ({
-                                        ...values,
-                                        recipient: values.recipient,
-                                        amount: '',
-                                    }));
-                                }}
-                            />
-                        )}
-                    </form>
-                }
+                                                        return (
+                                                            Boolean(
+                                                                parseUnits(value || '0', selectedToken?.decimals).gt(BigNumber.from('0'))
+                                                            ) || 'Amount must be greater than 0'
+                                                        );
+                                                    } catch (e) {
+                                                        return 'Not a valid number';
+                                                    }
+                                                },
+                                            })}
+                                        />
+                                    </InputGroup>
+                                    <FormErrorMessage my=".25rem">{errors.amount && errors.amount.message}</FormErrorMessage>
+                                </FormControl>
+                                <Button
+                                    isDisabled={!isConnected || chain?.unsupported}
+                                    // type="Deposit"
+                                    size="lg"
+                                    mt=".75rem"
+                                    width="100%"
+                                >
+                                    Withdraw
+                                </Button>
+                                {selectedToken && (
+                                    <ReviewTransactionModal
+                                        isOpen={isReviewOpen}
+                                        onClose={closeReview}
+                                        recipient={recipient}
+                                        displayName={recipientDisplayName}
+                                        token={selectedToken}
+                                        amount={tokenAmount}
+                                        onSubmitClick={() => {
+                                            reset((values) => ({
+                                                ...values,
+                                                recipient: values.recipient,
+                                                amount: '',
+                                            }));
+                                        }}
+                                    />
+                                )}
+                            </form>
+                        </TabPanel>
+                    </TabPanels>
+                </Tabs>
             </Box>
         </Box>
     );

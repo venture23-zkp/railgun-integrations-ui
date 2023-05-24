@@ -6,13 +6,14 @@ import { shortenAddress } from "@/utils/address";
 import AddressContractManager from "@/abi/AddressContractManager.json";
 import { readContracts } from '@wagmi/core';
 import SetupACModal from "./SetupACModal";
+import AcmNftType from "@/types/AcmNftType";
 
 const AaveV3 = () => {
-  const [selectedNFT, setSelectedNFT] = useState<NftType>();
+  const [selectedNFT, setSelectedNFT] = useState<AcmNftType>();
   const [isSetupACModalOpen, setIsSetupACModalOpen] = useState<boolean>(false);
 
   if (selectedNFT) {
-    <LiquidityPool nft={selectedNFT} />;
+    return <LiquidityPool acmNft={selectedNFT} />;
   } else {
     return (
       <Flex direction="column" align="center" justify="center">
@@ -24,7 +25,7 @@ const AaveV3 = () => {
           // maxHeight='32rem'
           // overflow={'scroll'}
           >
-            <NFTLists onClick={(nft: NftType) => { setSelectedNFT(nft) }} />
+            <NFTLists onClick={(nft: AcmNftType) => { setSelectedNFT(nft) }} />
             <IconButton
               colorScheme='blue'
               aria-label='Search database'
@@ -41,12 +42,7 @@ const AaveV3 = () => {
   }
 };
 
-type NftType = {
-  id: number,
-  contractAddress: string
-}
-
-const nfts: NftType[] = [
+const nfts: AcmNftType[] = [
   {
     id: 32,
     contractAddress: '0x1CFFC31408461d036227F53384B49b80d8580F19'
@@ -72,10 +68,6 @@ const nfts: NftType[] = [
     contractAddress: '0x1CFFC31408461d036227F53384B49b80d8580F19'
   },
   {
-    id: 54,
-    contractAddress: '0x1CFFC31408461d036227F53384B49b80d8580F19'
-  },
-  {
     id: 34534,
     contractAddress: '0x1CFFC31408461d036227F53384B49b80d8580F19'
   },
@@ -86,7 +78,7 @@ const nfts: NftType[] = [
 ]
 
 type NFTListsPropsType = {
-  onClick: (nft: NftType) => void
+  onClick: (nft: AcmNftType) => void
 }
 
 const NFTLists = ({ onClick }: NFTListsPropsType) => {
