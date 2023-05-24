@@ -5,7 +5,7 @@ import { FormControl, FormErrorMessage, FormLabel } from '@chakra-ui/form-contro
 import { CopyIcon } from '@chakra-ui/icons';
 import { Input, InputGroup } from '@chakra-ui/input';
 import { Box, Flex, Text } from '@chakra-ui/layout';
-import { useDisclosure, Tab, TabList, Tabs, TabPanel, TabPanels, Card, CardHeader, Heading, CardBody, Stack, StackDivider } from '@chakra-ui/react';
+import { useDisclosure, Tab, TabList, Tabs, TabPanel, TabPanels, Card, CardHeader, Heading, CardBody, Stack, StackDivider, IconButton } from '@chakra-ui/react';
 import { Textarea } from '@chakra-ui/textarea';
 import { getRailgunSmartWalletContractForNetwork } from '@railgun-community/quickstart';
 import { validateRailgunAddress } from '@railgun-community/quickstart';
@@ -27,6 +27,7 @@ import { buildBaseToken, getNetwork } from '@/utils/networks';
 import { endsWithAny } from '@/utils/string';
 import { isAmountParsable } from '@/utils/token';
 import AcmNftType from "@/types/AcmNftType";
+import { ArrowBackIcon } from '@chakra-ui/icons';
 
 type LiquidityPoolValues = {
     recipient: string;
@@ -39,7 +40,7 @@ enum ETab {
     WITHDRAW = 2,
 }
 
-const LiquidityPool = ({ recipientAddress, acmNft }: { recipientAddress?: string, acmNft: AcmNftType }) => {
+const LiquidityPool = ({ recipientAddress, acmNft, handleBackClick }: { recipientAddress?: string, acmNft: AcmNftType, handleBackClick: () => void }) => {
     const { tokenAllowances, tokenList } = useToken();
     const { mutate } = useSWRConfig();
     const { chain } = useNetwork();
@@ -123,6 +124,17 @@ const LiquidityPool = ({ recipientAddress, acmNft }: { recipientAddress?: string
 
     return (
         <Box>
+            <IconButton
+                colorScheme='blue'
+                aria-label='back'
+                icon={<ArrowBackIcon />}
+                position={'absolute'}
+                top={0}
+                left={0}
+                variant={'link'}
+                height={'40px'}
+                onClick={handleBackClick}
+            />
             <Tabs variant='soft-rounded' colorScheme='teal'>
                 <TabList>
                     <Tab>Deposit</Tab>

@@ -18,15 +18,15 @@ const AaveV3 = () => {
         AAVE V3
       </Heading>
       <Box display={"flex"} justifyContent={"center"} alignItems={"center"} minH={"100vh"}>
-        <Box w="42rem" className="container"
+        <Box w="42rem" className="container" position={'relative'}
         // maxHeight='32rem'
         // overflow={'scroll'}
         >
           {
             selectedNFT ?
-              <LiquidityPool acmNft={selectedNFT} /> :
+              <LiquidityPool acmNft={selectedNFT} handleBackClick={() => { setSelectedNFT(undefined) }} /> :
               <>
-                <NFTLists onClick={(nft: AcmNftType) => { setSelectedNFT(nft) }} /> :
+                <NFTLists onClick={(nft: AcmNftType) => { setSelectedNFT(nft) }} />
                 <IconButton
                   colorScheme='blue'
                   aria-label='Search database'
