@@ -12,34 +12,36 @@ const AaveV3 = () => {
   const [selectedNFT, setSelectedNFT] = useState<AcmNftType>();
   const [isSetupACModalOpen, setIsSetupACModalOpen] = useState<boolean>(false);
 
-  if (selectedNFT) {
-    return <LiquidityPool acmNft={selectedNFT} />;
-  } else {
-    return (
-      <Flex direction="column" align="center" justify="center">
-        <Heading as="h1" size="2xl" mb="1rem">
-          AAVE V3
-        </Heading>
-        <Box display={"flex"} justifyContent={"center"} alignItems={"center"} minH={"100vh"}>
-          <Box w="42rem" className="container"
-          // maxHeight='32rem'
-          // overflow={'scroll'}
-          >
-            <NFTLists onClick={(nft: AcmNftType) => { setSelectedNFT(nft) }} />
-            <IconButton
-              colorScheme='blue'
-              aria-label='Search database'
-              w="100%"
-              marginTop={'12px'}
-              icon={<AddIcon />}
-              onClick={() => { setIsSetupACModalOpen(true) }}
-            />
-          </Box>
+  return (
+    <Flex direction="column" align="center" justify="center">
+      <Heading as="h1" size="2xl" mb="1rem">
+        AAVE V3
+      </Heading>
+      <Box display={"flex"} justifyContent={"center"} alignItems={"center"} minH={"100vh"}>
+        <Box w="42rem" className="container"
+        // maxHeight='32rem'
+        // overflow={'scroll'}
+        >
+          {
+            selectedNFT ?
+              <LiquidityPool acmNft={selectedNFT} /> :
+              <>
+                <NFTLists onClick={(nft: AcmNftType) => { setSelectedNFT(nft) }} /> :
+                <IconButton
+                  colorScheme='blue'
+                  aria-label='Search database'
+                  w="100%"
+                  marginTop={'12px'}
+                  icon={<AddIcon />}
+                  onClick={() => { setIsSetupACModalOpen(true) }}
+                />
+              </>
+          }
         </Box>
-        <SetupACModal isOpen={isSetupACModalOpen} onClose={() => { setIsSetupACModalOpen(false) }} />
-      </Flex>
-    )
-  }
+      </Box>
+      <SetupACModal isOpen={isSetupACModalOpen} onClose={() => { setIsSetupACModalOpen(false) }} />
+    </Flex>
+  )
 };
 
 const nfts: AcmNftType[] = [
