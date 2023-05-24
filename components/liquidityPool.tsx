@@ -63,7 +63,6 @@ const LiquidityPool = ({ recipientAddress, acmNft }: { recipientAddress?: string
     const [selectedToken, setSelectedToken] = useState<TokenListContextItem>(tokenList[0]);
     const [validAddress, setValidAddress] = useState(false);
     const [tokenAmount, setTokenAmount] = useState<string>('');
-    const [selectedTab, setSelectedTab] = useState<ETab>(ETab.DEPOSIT)
     const { config } = usePrepareContractWrite({
         address: selectedToken?.address,
         abi: erc20ABI,
@@ -128,11 +127,141 @@ const LiquidityPool = ({ recipientAddress, acmNft }: { recipientAddress?: string
                 <TabList>
                     <Tab>Deposit</Tab>
                     <Tab>Withdraw</Tab>
+                    <Tab>Borrow</Tab>
+                    <Tab>Repay</Tab>
                 </TabList>
                 <TabPanels>
                     <TabPanel>
-                        <form onSubmit={onSubmit}>
-                            {/* <FormControl isInvalid={Boolean(errors.recipient?.message)}>
+                        <DepositForm recipientAddress={recipientAddress} />
+                    </TabPanel>
+                    <TabPanel>
+                        <WithdrawForm recipientAddress={recipientAddress} />
+                    </TabPanel>
+                    <TabPanel>
+                        <BorrowForm recipientAddress={recipientAddress} />
+                    </TabPanel>
+                    <TabPanel>
+                        <RepayForm recipientAddress={recipientAddress} />
+                    </TabPanel>
+                </TabPanels>
+            </Tabs>
+            <Card>
+                <CardHeader>
+                    <Heading size='md'>Details</Heading>
+                </CardHeader>
+
+                <CardBody>
+                    <Stack divider={<StackDivider />} spacing='4'>
+                        <Box>
+                            <Heading size='xs' textTransform='uppercase'>
+                                ACM NFT ID
+                            </Heading>
+                            <Text pt='2' fontSize='sm'>
+                                {acmNft.id}
+                            </Text>
+                        </Box>
+                        <Box>
+                            <Heading size='xs' textTransform='uppercase'>
+                                AC Contract Address
+                            </Heading>
+                            <Text pt='2' fontSize='sm'>
+                                {acmNft.contractAddress}
+                            </Text>
+                        </Box>
+                    </Stack>
+                </CardBody>
+            </Card>
+        </Box>
+        //     </Box>
+        // </Box>
+    );
+};
+
+const DepositForm = ({ recipientAddress }: { recipientAddress?: string }) => {
+    const { tokenAllowances, tokenList } = useToken();
+    const { mutate } = useSWRConfig();
+    const { chain } = useNetwork();
+    const { isConnected } = useAccount();
+    const network = getNetwork(chain?.id);
+    const { notifyUser, txNotify } = useNotifications();
+    const {
+        handleSubmit,
+        register,
+        setValue,
+        reset,
+        formState: { errors },
+    } = useForm<LiquidityPoolValues>({
+        mode: 'onChange',
+        defaultValues: {
+            token: network.baseToken.name,
+            recipient: recipientAddress,
+        },
+    });
+    const { isOpen: isReviewOpen, onOpen: openReview, onClose: closeReview } = useDisclosure();
+    const [selectedToken, setSelectedToken] = useState<TokenListContextItem>(tokenList[0]);
+    const [validAddress, setValidAddress] = useState(false);
+    const [tokenAmount, setTokenAmount] = useState<string>('');
+    const { config } = usePrepareContractWrite({
+        address: selectedToken?.address,
+        abi: erc20ABI,
+        functionName: 'approve',
+        args: [
+            getRailgunSmartWalletContractForNetwork(network.railgunNetworkName).address as `0x{string}`,
+            ethers.utils.parseUnits(tokenAmount || '0', selectedToken?.decimals),
+        ],
+    });
+    const { writeAsync: doErc20Approval } = useContractWrite(config);
+    const [isApprovalLoading, setIsApprovalLoading] = useState(false);
+    const { data } = useTokenAllowance({ address: selectedToken?.address || '' });
+    const tokenAllowance =
+        tokenAllowances.get(selectedToken?.address || '') || data || BigNumber.from(0);
+    const [recipient, setRecipient] = useState<string>(recipientAddress || '');
+    const [recipientDisplayName, setRecipientDisplayName] = useState<string>(recipientAddress || '');
+    const { data: resolvedUnstoppableDomain, trigger: resolveDomain } =
+        useResolveUnstoppableDomainAddress();
+    const needsApproval =
+        selectedToken?.address !== ethAddress &&
+        ethers.utils.parseUnits(tokenAmount || '0', selectedToken?.decimals).gt(tokenAllowance);
+    const onCopy = () => {
+        navigator.clipboard.writeText(`${window.location.host}/send?address=${recipientDisplayName}`);
+        notifyUser({
+            alertType: 'success',
+            message: 'Shield link copied to clipboard',
+        });
+    };
+    const onSubmit = handleSubmit(async (values) => {
+        setRecipient(resolvedUnstoppableDomain || values.recipient);
+        setRecipientDisplayName(values.recipient);
+        setTokenAmount(values.amount);
+        openReview();
+    });
+
+    const updateOnNetworkChange = useCallback(
+        (net: GetNetworkResult) => {
+            if (net && net?.chain) {
+                const chain = getNetwork(net?.chain.id);
+                const token = buildBaseToken(chain.baseToken, net.chain.id);
+                setSelectedToken(token);
+                setValue('token', chain.baseToken.name);
+            }
+        },
+        [setValue]
+    );
+
+    useEffect(() => {
+        const unwatch = watchNetwork(updateOnNetworkChange);
+        return unwatch;
+    }, [updateOnNetworkChange]);
+
+    useEffect(() => {
+        if (!selectedToken) {
+            setSelectedToken(tokenList[0]);
+        }
+    }, [selectedToken, tokenList]);
+
+    return (
+        <form onSubmit={onSubmit}>
+            {/* <FormControl isInvalid={Boolean(errors.recipient?.message)}>
               <Flex justify="space-between">
                 <FormLabel>Recipient address</FormLabel>
 
@@ -186,68 +315,68 @@ const LiquidityPool = ({ recipientAddress, acmNft }: { recipientAddress?: string
                 {errors.recipient && errors.recipient.message}
               </FormErrorMessage>
             </FormControl> */}
-                            <FormControl isInvalid={Boolean(errors.token?.message)} mt=".5rem">
-                                <FormLabel>Token</FormLabel>
-                                <TokenInput
-                                    {...register('token')}
-                                    onSelect={(token) => {
-                                        setValue('token', token.name);
-                                        setSelectedToken(token);
-                                    }}
-                                />
-                            </FormControl>
-                            <FormControl isInvalid={Boolean(errors.amount?.message)}>
-                                <FormLabel>Amount</FormLabel>
-                                <InputGroup size="lg" width="auto" height="4rem">
-                                    <Input
-                                        variant="outline"
-                                        size="lg"
-                                        pr="4.5rem"
-                                        height="100%"
-                                        placeholder="0.1"
-                                        {...register('amount', {
-                                            required: 'This is required',
-                                            onChange: (e) => {
-                                                const isParseable = isAmountParsable(e.target.value, selectedToken.decimals);
-                                                if (
-                                                    e.target.value &&
-                                                    !isNaN(e.target.value) &&
-                                                    VALID_AMOUNT_REGEX.test(e.target.value) &&
-                                                    isParseable
-                                                ) {
-                                                    setTokenAmount(e.target.value);
-                                                }
-                                            },
-                                            validate: (value) => {
-                                                try {
-                                                    if (!VALID_AMOUNT_REGEX.test(value) && isNaN(parseFloat(value))) {
-                                                        return 'Not a valid number';
-                                                    }
+            <FormControl isInvalid={Boolean(errors.token?.message)} mt=".5rem">
+                <FormLabel>Token</FormLabel>
+                <TokenInput
+                    {...register('token')}
+                    onSelect={(token) => {
+                        setValue('token', token.name);
+                        setSelectedToken(token);
+                    }}
+                />
+            </FormControl>
+            <FormControl isInvalid={Boolean(errors.amount?.message)}>
+                <FormLabel>Amount</FormLabel>
+                <InputGroup size="lg" width="auto" height="4rem">
+                    <Input
+                        variant="outline"
+                        size="lg"
+                        pr="4.5rem"
+                        height="100%"
+                        placeholder="0.1"
+                        {...register('amount', {
+                            required: 'This is required',
+                            onChange: (e) => {
+                                const isParseable = isAmountParsable(e.target.value, selectedToken.decimals);
+                                if (
+                                    e.target.value &&
+                                    !isNaN(e.target.value) &&
+                                    VALID_AMOUNT_REGEX.test(e.target.value) &&
+                                    isParseable
+                                ) {
+                                    setTokenAmount(e.target.value);
+                                }
+                            },
+                            validate: (value) => {
+                                try {
+                                    if (!VALID_AMOUNT_REGEX.test(value) && isNaN(parseFloat(value))) {
+                                        return 'Not a valid number';
+                                    }
 
-                                                    return (
-                                                        Boolean(
-                                                            parseUnits(value || '0', selectedToken?.decimals).gt(BigNumber.from('0'))
-                                                        ) || 'Amount must be greater than 0'
-                                                    );
-                                                } catch (e) {
-                                                    return 'Not a valid number';
-                                                }
-                                            },
-                                        })}
-                                    />
-                                </InputGroup>
-                                <FormErrorMessage my=".25rem">{errors.amount && errors.amount.message}</FormErrorMessage>
-                            </FormControl>
-                            <Button
-                                isDisabled={!isConnected || chain?.unsupported}
-                                // type="Deposit"
-                                size="lg"
-                                mt=".75rem"
-                                width="100%"
-                            >
-                                Deposit
-                            </Button>
-                            {/* {needsApproval ? (
+                                    return (
+                                        Boolean(
+                                            parseUnits(value || '0', selectedToken?.decimals).gt(BigNumber.from('0'))
+                                        ) || 'Amount must be greater than 0'
+                                    );
+                                } catch (e) {
+                                    return 'Not a valid number';
+                                }
+                            },
+                        })}
+                    />
+                </InputGroup>
+                <FormErrorMessage my=".25rem">{errors.amount && errors.amount.message}</FormErrorMessage>
+            </FormControl>
+            <Button
+                isDisabled={!isConnected || chain?.unsupported}
+                // type="Deposit"
+                size="lg"
+                mt=".75rem"
+                width="100%"
+            >
+                Deposit
+            </Button>
+            {/* {needsApproval ? (
               <Button
                 size="lg"
                 mt=".75rem"
@@ -289,139 +418,637 @@ const LiquidityPool = ({ recipientAddress, acmNft }: { recipientAddress?: string
                 Shield
               </Button>
             )} */}
-                            {selectedToken && (
-                                <ReviewTransactionModal
-                                    isOpen={isReviewOpen}
-                                    onClose={closeReview}
-                                    recipient={recipient}
-                                    displayName={recipientDisplayName}
-                                    token={selectedToken}
-                                    amount={tokenAmount}
-                                    onSubmitClick={() => {
-                                        reset((values) => ({
-                                            ...values,
-                                            recipient: values.recipient,
-                                            amount: '',
-                                        }));
-                                    }}
-                                />
-                            )}
-                        </form>
-                    </TabPanel>
-                    <TabPanel>
-                        <form onSubmit={onSubmit}>
-                            <FormControl isInvalid={Boolean(errors.token?.message)} mt=".5rem">
-                                <FormLabel>Token</FormLabel>
-                                <TokenInput
-                                    {...register('token')}
-                                    onSelect={(token) => {
-                                        setValue('token', token.name);
-                                        setSelectedToken(token);
-                                    }}
-                                />
-                            </FormControl>
-                            <FormControl isInvalid={Boolean(errors.amount?.message)}>
-                                <FormLabel>Amount</FormLabel>
-                                <InputGroup size="lg" width="auto" height="4rem">
-                                    <Input
-                                        variant="outline"
-                                        size="lg"
-                                        pr="4.5rem"
-                                        height="100%"
-                                        placeholder="0.1"
-                                        {...register('amount', {
-                                            required: 'This is required',
-                                            onChange: (e) => {
-                                                const isParseable = isAmountParsable(e.target.value, selectedToken.decimals);
-                                                if (
-                                                    e.target.value &&
-                                                    !isNaN(e.target.value) &&
-                                                    VALID_AMOUNT_REGEX.test(e.target.value) &&
-                                                    isParseable
-                                                ) {
-                                                    setTokenAmount(e.target.value);
-                                                }
-                                            },
-                                            validate: (value) => {
-                                                try {
-                                                    if (!VALID_AMOUNT_REGEX.test(value) && isNaN(parseFloat(value))) {
-                                                        return 'Not a valid number';
-                                                    }
+            {selectedToken && (
+                <ReviewTransactionModal
+                    isOpen={isReviewOpen}
+                    onClose={closeReview}
+                    recipient={recipient}
+                    displayName={recipientDisplayName}
+                    token={selectedToken}
+                    amount={tokenAmount}
+                    onSubmitClick={() => {
+                        reset((values) => ({
+                            ...values,
+                            recipient: values.recipient,
+                            amount: '',
+                        }));
+                    }}
+                />
+            )}
+        </form>
+    )
+}
 
-                                                    return (
-                                                        Boolean(
-                                                            parseUnits(value || '0', selectedToken?.decimals).gt(BigNumber.from('0'))
-                                                        ) || 'Amount must be greater than 0'
-                                                    );
-                                                } catch (e) {
-                                                    return 'Not a valid number';
-                                                }
-                                            },
-                                        })}
-                                    />
-                                </InputGroup>
-                                <FormErrorMessage my=".25rem">{errors.amount && errors.amount.message}</FormErrorMessage>
-                            </FormControl>
-                            <Button
-                                isDisabled={!isConnected || chain?.unsupported}
-                                // type="Deposit"
-                                size="lg"
-                                mt=".75rem"
-                                width="100%"
-                            >
-                                Withdraw
-                            </Button>
-                            {selectedToken && (
-                                <ReviewTransactionModal
-                                    isOpen={isReviewOpen}
-                                    onClose={closeReview}
-                                    recipient={recipient}
-                                    displayName={recipientDisplayName}
-                                    token={selectedToken}
-                                    amount={tokenAmount}
-                                    onSubmitClick={() => {
-                                        reset((values) => ({
-                                            ...values,
-                                            recipient: values.recipient,
-                                            amount: '',
-                                        }));
-                                    }}
-                                />
-                            )}
-                        </form>
-                    </TabPanel>
-                </TabPanels>
-            </Tabs>
-            <Card>
-                <CardHeader>
-                    <Heading size='md'>Details</Heading>
-                </CardHeader>
+const WithdrawForm = ({ recipientAddress }: { recipientAddress?: string }) => {
+    const { tokenAllowances, tokenList } = useToken();
+    const { mutate } = useSWRConfig();
+    const { chain } = useNetwork();
+    const { isConnected } = useAccount();
+    const network = getNetwork(chain?.id);
+    const { notifyUser, txNotify } = useNotifications();
+    const {
+        handleSubmit,
+        register,
+        setValue,
+        reset,
+        formState: { errors },
+    } = useForm<LiquidityPoolValues>({
+        mode: 'onChange',
+        defaultValues: {
+            token: network.baseToken.name,
+            recipient: recipientAddress,
+        },
+    });
+    const { isOpen: isReviewOpen, onOpen: openReview, onClose: closeReview } = useDisclosure();
+    const [selectedToken, setSelectedToken] = useState<TokenListContextItem>(tokenList[0]);
+    const [validAddress, setValidAddress] = useState(false);
+    const [tokenAmount, setTokenAmount] = useState<string>('');
+    const { config } = usePrepareContractWrite({
+        address: selectedToken?.address,
+        abi: erc20ABI,
+        functionName: 'approve',
+        args: [
+            getRailgunSmartWalletContractForNetwork(network.railgunNetworkName).address as `0x{string}`,
+            ethers.utils.parseUnits(tokenAmount || '0', selectedToken?.decimals),
+        ],
+    });
+    const { writeAsync: doErc20Approval } = useContractWrite(config);
+    const [isApprovalLoading, setIsApprovalLoading] = useState(false);
+    const { data } = useTokenAllowance({ address: selectedToken?.address || '' });
+    const tokenAllowance =
+        tokenAllowances.get(selectedToken?.address || '') || data || BigNumber.from(0);
+    const [recipient, setRecipient] = useState<string>(recipientAddress || '');
+    const [recipientDisplayName, setRecipientDisplayName] = useState<string>(recipientAddress || '');
+    const { data: resolvedUnstoppableDomain, trigger: resolveDomain } =
+        useResolveUnstoppableDomainAddress();
+    const needsApproval =
+        selectedToken?.address !== ethAddress &&
+        ethers.utils.parseUnits(tokenAmount || '0', selectedToken?.decimals).gt(tokenAllowance);
+    const onCopy = () => {
+        navigator.clipboard.writeText(`${window.location.host}/send?address=${recipientDisplayName}`);
+        notifyUser({
+            alertType: 'success',
+            message: 'Shield link copied to clipboard',
+        });
+    };
+    const onSubmit = handleSubmit(async (values) => {
+        setRecipient(resolvedUnstoppableDomain || values.recipient);
+        setRecipientDisplayName(values.recipient);
+        setTokenAmount(values.amount);
+        openReview();
+    });
 
-                <CardBody>
-                    <Stack divider={<StackDivider />} spacing='4'>
-                        <Box>
-                            <Heading size='xs' textTransform='uppercase'>
-                                ACM NFT ID
-                            </Heading>
-                            <Text pt='2' fontSize='sm'>
-                                {acmNft.id}
-                            </Text>
-                        </Box>
-                        <Box>
-                            <Heading size='xs' textTransform='uppercase'>
-                                AC Contract Address
-                            </Heading>
-                            <Text pt='2' fontSize='sm'>
-                                {acmNft.contractAddress}
-                            </Text>
-                        </Box>
-                    </Stack>
-                </CardBody>
-            </Card>
-        </Box>
-        //     </Box>
-        // </Box>
+    const updateOnNetworkChange = useCallback(
+        (net: GetNetworkResult) => {
+            if (net && net?.chain) {
+                const chain = getNetwork(net?.chain.id);
+                const token = buildBaseToken(chain.baseToken, net.chain.id);
+                setSelectedToken(token);
+                setValue('token', chain.baseToken.name);
+            }
+        },
+        [setValue]
     );
+
+    useEffect(() => {
+        const unwatch = watchNetwork(updateOnNetworkChange);
+        return unwatch;
+    }, [updateOnNetworkChange]);
+
+    useEffect(() => {
+        if (!selectedToken) {
+            setSelectedToken(tokenList[0]);
+        }
+    }, [selectedToken, tokenList]);
+
+    return (
+        <form onSubmit={onSubmit}>
+            <FormControl isInvalid={Boolean(errors.token?.message)} mt=".5rem">
+                <FormLabel>Token</FormLabel>
+                <TokenInput
+                    {...register('token')}
+                    onSelect={(token) => {
+                        setValue('token', token.name);
+                        setSelectedToken(token);
+                    }}
+                />
+            </FormControl>
+            <FormControl isInvalid={Boolean(errors.amount?.message)}>
+                <FormLabel>Amount</FormLabel>
+                <InputGroup size="lg" width="auto" height="4rem">
+                    <Input
+                        variant="outline"
+                        size="lg"
+                        pr="4.5rem"
+                        height="100%"
+                        placeholder="0.1"
+                        {...register('amount', {
+                            required: 'This is required',
+                            onChange: (e) => {
+                                const isParseable = isAmountParsable(e.target.value, selectedToken.decimals);
+                                if (
+                                    e.target.value &&
+                                    !isNaN(e.target.value) &&
+                                    VALID_AMOUNT_REGEX.test(e.target.value) &&
+                                    isParseable
+                                ) {
+                                    setTokenAmount(e.target.value);
+                                }
+                            },
+                            validate: (value) => {
+                                try {
+                                    if (!VALID_AMOUNT_REGEX.test(value) && isNaN(parseFloat(value))) {
+                                        return 'Not a valid number';
+                                    }
+
+                                    return (
+                                        Boolean(
+                                            parseUnits(value || '0', selectedToken?.decimals).gt(BigNumber.from('0'))
+                                        ) || 'Amount must be greater than 0'
+                                    );
+                                } catch (e) {
+                                    return 'Not a valid number';
+                                }
+                            },
+                        })}
+                    />
+                </InputGroup>
+                <FormErrorMessage my=".25rem">{errors.amount && errors.amount.message}</FormErrorMessage>
+            </FormControl>
+            <Button
+                isDisabled={!isConnected || chain?.unsupported}
+                // type="Deposit"
+                size="lg"
+                mt=".75rem"
+                width="100%"
+            >
+                Withdraw
+            </Button>
+            {selectedToken && (
+                <ReviewTransactionModal
+                    isOpen={isReviewOpen}
+                    onClose={closeReview}
+                    recipient={recipient}
+                    displayName={recipientDisplayName}
+                    token={selectedToken}
+                    amount={tokenAmount}
+                    onSubmitClick={() => {
+                        reset((values) => ({
+                            ...values,
+                            recipient: values.recipient,
+                            amount: '',
+                        }));
+                    }}
+                />
+            )}
+        </form>
+    )
+}
+
+type BorrowValues = {
+    recipient: string;
+    borrowAmount: string;
+    borrowToken: string;
+    collateralAmount: string;
+    collateralToken: string;
 };
+
+const BorrowForm = ({ recipientAddress }: { recipientAddress?: string }) => {
+    const { tokenAllowances, tokenList } = useToken();
+    const { mutate } = useSWRConfig();
+    const { chain } = useNetwork();
+    const { isConnected } = useAccount();
+    const network = getNetwork(chain?.id);
+    const { notifyUser, txNotify } = useNotifications();
+    const {
+        handleSubmit,
+        register,
+        setValue,
+        reset,
+        formState: { errors },
+    } = useForm<BorrowValues>({
+        mode: 'onChange',
+        defaultValues: {
+            borrowToken: network.baseToken.name,
+            collateralToken: network.baseToken.name,
+            recipient: recipientAddress,
+        },
+    });
+    const { isOpen: isReviewOpen, onOpen: openReview, onClose: closeReview } = useDisclosure();
+    const [selectedToken, setSelectedToken] = useState<TokenListContextItem>(tokenList[0]);
+    const [validAddress, setValidAddress] = useState(false);
+    const [tokenAmount, setTokenAmount] = useState<string>('');
+    const { config } = usePrepareContractWrite({
+        address: selectedToken?.address,
+        abi: erc20ABI,
+        functionName: 'approve',
+        args: [
+            getRailgunSmartWalletContractForNetwork(network.railgunNetworkName).address as `0x{string}`,
+            ethers.utils.parseUnits(tokenAmount || '0', selectedToken?.decimals),
+        ],
+    });
+    const { writeAsync: doErc20Approval } = useContractWrite(config);
+    const [isApprovalLoading, setIsApprovalLoading] = useState(false);
+    const { data } = useTokenAllowance({ address: selectedToken?.address || '' });
+    const tokenAllowance =
+        tokenAllowances.get(selectedToken?.address || '') || data || BigNumber.from(0);
+    const [recipient, setRecipient] = useState<string>(recipientAddress || '');
+    const [recipientDisplayName, setRecipientDisplayName] = useState<string>(recipientAddress || '');
+    const { data: resolvedUnstoppableDomain, trigger: resolveDomain } =
+        useResolveUnstoppableDomainAddress();
+    const needsApproval =
+        selectedToken?.address !== ethAddress &&
+        ethers.utils.parseUnits(tokenAmount || '0', selectedToken?.decimals).gt(tokenAllowance);
+    const onCopy = () => {
+        navigator.clipboard.writeText(`${window.location.host}/send?address=${recipientDisplayName}`);
+        notifyUser({
+            alertType: 'success',
+            message: 'Shield link copied to clipboard',
+        });
+    };
+    const onSubmit = handleSubmit(async (values) => {
+        // setRecipient(resolvedUnstoppableDomain || values.recipient);
+        // setRecipientDisplayName(values.recipient);
+        // setTokenAmount(values.amount);
+        // openReview();
+    });
+
+    // const updateOnNetworkChange = useCallback(
+    //     (net: GetNetworkResult) => {
+    //         if (net && net?.chain) {
+    //             const chain = getNetwork(net?.chain.id);
+    //             const token = buildBaseToken(chain.baseToken, net.chain.id);
+    //             setSelectedToken(token);
+    //             setValue('token', chain.baseToken.name);
+    //         }
+    //     },
+    //     [setValue]
+    // );
+
+    // useEffect(() => {
+    //     const unwatch = watchNetwork(updateOnNetworkChange);
+    //     return unwatch;
+    // }, [updateOnNetworkChange]);
+
+    useEffect(() => {
+        if (!selectedToken) {
+            setSelectedToken(tokenList[0]);
+        }
+    }, [selectedToken, tokenList]);
+
+    return (
+        <form onSubmit={onSubmit}>
+            <FormControl isInvalid={Boolean(errors.borrowToken?.message)} mt=".5rem">
+                <FormLabel>Borrow Token Select</FormLabel>
+                <TokenInput
+                    {...register('borrowToken')}
+                    onSelect={(token) => {
+                        setValue('borrowToken', token.name);
+                        setSelectedToken(token);
+                    }}
+                />
+            </FormControl>
+            <FormControl isInvalid={Boolean(errors.borrowAmount?.message)}>
+                <FormLabel>Borrow Amount</FormLabel>
+                <InputGroup size="lg" width="auto" height="4rem">
+                    <Input
+                        variant="outline"
+                        size="lg"
+                        pr="4.5rem"
+                        height="100%"
+                        placeholder="0.1"
+                        {...register('borrowAmount', {
+                            required: 'This is required',
+                            onChange: (e) => {
+                                const isParseable = isAmountParsable(e.target.value, selectedToken.decimals);
+                                if (
+                                    e.target.value &&
+                                    !isNaN(e.target.value) &&
+                                    VALID_AMOUNT_REGEX.test(e.target.value) &&
+                                    isParseable
+                                ) {
+                                    setTokenAmount(e.target.value);
+                                }
+                            },
+                            validate: (value) => {
+                                try {
+                                    if (!VALID_AMOUNT_REGEX.test(value) && isNaN(parseFloat(value))) {
+                                        return 'Not a valid number';
+                                    }
+
+                                    return (
+                                        Boolean(
+                                            parseUnits(value || '0', selectedToken?.decimals).gt(BigNumber.from('0'))
+                                        ) || 'Amount must be greater than 0'
+                                    );
+                                } catch (e) {
+                                    return 'Not a valid number';
+                                }
+                            },
+                        })}
+                    />
+                </InputGroup>
+                <FormErrorMessage my=".25rem">{errors.borrowAmount && errors.borrowAmount.message}</FormErrorMessage>
+            </FormControl>
+            <FormControl isInvalid={Boolean(errors.collateralToken?.message)} mt=".5rem">
+                <FormLabel>Collateral Token Select</FormLabel>
+                <TokenInput
+                    {...register('collateralToken')}
+                    onSelect={(token) => {
+                        setValue('collateralToken', token.name);
+                        setSelectedToken(token);
+                    }}
+                />
+            </FormControl>
+            <FormControl isInvalid={Boolean(errors.collateralAmount?.message)}>
+                <FormLabel>Collateral Amount</FormLabel>
+                <InputGroup size="lg" width="auto" height="4rem">
+                    <Input
+                        variant="outline"
+                        size="lg"
+                        pr="4.5rem"
+                        height="100%"
+                        placeholder="0.1"
+                        {...register('collateralAmount', {
+                            required: 'This is required',
+                            onChange: (e) => {
+                                const isParseable = isAmountParsable(e.target.value, selectedToken.decimals);
+                                if (
+                                    e.target.value &&
+                                    !isNaN(e.target.value) &&
+                                    VALID_AMOUNT_REGEX.test(e.target.value) &&
+                                    isParseable
+                                ) {
+                                    setTokenAmount(e.target.value);
+                                }
+                            },
+                            validate: (value) => {
+                                try {
+                                    if (!VALID_AMOUNT_REGEX.test(value) && isNaN(parseFloat(value))) {
+                                        return 'Not a valid number';
+                                    }
+
+                                    return (
+                                        Boolean(
+                                            parseUnits(value || '0', selectedToken?.decimals).gt(BigNumber.from('0'))
+                                        ) || 'Amount must be greater than 0'
+                                    );
+                                } catch (e) {
+                                    return 'Not a valid number';
+                                }
+                            },
+                        })}
+                    />
+                </InputGroup>
+                <FormErrorMessage my=".25rem">{errors.collateralAmount && errors.collateralAmount.message}</FormErrorMessage>
+            </FormControl>
+            <Button
+                isDisabled={!isConnected || chain?.unsupported}
+                // type="Deposit"
+                size="lg"
+                mt=".75rem"
+                width="100%"
+            >
+                Borrow
+            </Button>
+            {selectedToken && (
+                <ReviewTransactionModal
+                    isOpen={isReviewOpen}
+                    onClose={closeReview}
+                    recipient={recipient}
+                    displayName={recipientDisplayName}
+                    token={selectedToken}
+                    amount={tokenAmount}
+                    onSubmitClick={() => {
+                        reset((values) => ({
+                            ...values,
+                            recipient: values.recipient,
+                            amount: '',
+                        }));
+                    }}
+                />
+            )}
+        </form>
+    )
+}
+
+const RepayForm = ({ recipientAddress }: { recipientAddress?: string }) => {
+    const { tokenAllowances, tokenList } = useToken();
+    const { mutate } = useSWRConfig();
+    const { chain } = useNetwork();
+    const { isConnected } = useAccount();
+    const network = getNetwork(chain?.id);
+    const { notifyUser, txNotify } = useNotifications();
+    const {
+        handleSubmit,
+        register,
+        setValue,
+        reset,
+        formState: { errors },
+    } = useForm<BorrowValues>({
+        mode: 'onChange',
+        defaultValues: {
+            borrowToken: network.baseToken.name,
+            collateralToken: network.baseToken.name,
+            recipient: recipientAddress,
+        },
+    });
+    const { isOpen: isReviewOpen, onOpen: openReview, onClose: closeReview } = useDisclosure();
+    const [selectedToken, setSelectedToken] = useState<TokenListContextItem>(tokenList[0]);
+    const [validAddress, setValidAddress] = useState(false);
+    const [tokenAmount, setTokenAmount] = useState<string>('');
+    const { config } = usePrepareContractWrite({
+        address: selectedToken?.address,
+        abi: erc20ABI,
+        functionName: 'approve',
+        args: [
+            getRailgunSmartWalletContractForNetwork(network.railgunNetworkName).address as `0x{string}`,
+            ethers.utils.parseUnits(tokenAmount || '0', selectedToken?.decimals),
+        ],
+    });
+    const { writeAsync: doErc20Approval } = useContractWrite(config);
+    const [isApprovalLoading, setIsApprovalLoading] = useState(false);
+    const { data } = useTokenAllowance({ address: selectedToken?.address || '' });
+    const tokenAllowance =
+        tokenAllowances.get(selectedToken?.address || '') || data || BigNumber.from(0);
+    const [recipient, setRecipient] = useState<string>(recipientAddress || '');
+    const [recipientDisplayName, setRecipientDisplayName] = useState<string>(recipientAddress || '');
+    const { data: resolvedUnstoppableDomain, trigger: resolveDomain } =
+        useResolveUnstoppableDomainAddress();
+    const needsApproval =
+        selectedToken?.address !== ethAddress &&
+        ethers.utils.parseUnits(tokenAmount || '0', selectedToken?.decimals).gt(tokenAllowance);
+    const onCopy = () => {
+        navigator.clipboard.writeText(`${window.location.host}/send?address=${recipientDisplayName}`);
+        notifyUser({
+            alertType: 'success',
+            message: 'Shield link copied to clipboard',
+        });
+    };
+    const onSubmit = handleSubmit(async (values) => {
+        // setRecipient(resolvedUnstoppableDomain || values.recipient);
+        // setRecipientDisplayName(values.recipient);
+        // setTokenAmount(values.amount);
+        // openReview();
+    });
+
+    // const updateOnNetworkChange = useCallback(
+    //     (net: GetNetworkResult) => {
+    //         if (net && net?.chain) {
+    //             const chain = getNetwork(net?.chain.id);
+    //             const token = buildBaseToken(chain.baseToken, net.chain.id);
+    //             setSelectedToken(token);
+    //             setValue('token', chain.baseToken.name);
+    //         }
+    //     },
+    //     [setValue]
+    // );
+
+    // useEffect(() => {
+    //     const unwatch = watchNetwork(updateOnNetworkChange);
+    //     return unwatch;
+    // }, [updateOnNetworkChange]);
+
+    useEffect(() => {
+        if (!selectedToken) {
+            setSelectedToken(tokenList[0]);
+        }
+    }, [selectedToken, tokenList]);
+
+    return (
+        <form onSubmit={onSubmit}>
+            <FormControl isInvalid={Boolean(errors.collateralToken?.message)} mt=".5rem">
+                <FormLabel>Collateral Token Select</FormLabel>
+                <TokenInput
+                    {...register('collateralToken')}
+                    onSelect={(token) => {
+                        setValue('collateralToken', token.name);
+                        setSelectedToken(token);
+                    }}
+                />
+            </FormControl>
+            <FormControl isInvalid={Boolean(errors.collateralAmount?.message)}>
+                <FormLabel>Collateral Amount</FormLabel>
+                <InputGroup size="lg" width="auto" height="4rem">
+                    <Input
+                        variant="outline"
+                        size="lg"
+                        pr="4.5rem"
+                        height="100%"
+                        placeholder="0.1"
+                        {...register('collateralAmount', {
+                            required: 'This is required',
+                            onChange: (e) => {
+                                const isParseable = isAmountParsable(e.target.value, selectedToken.decimals);
+                                if (
+                                    e.target.value &&
+                                    !isNaN(e.target.value) &&
+                                    VALID_AMOUNT_REGEX.test(e.target.value) &&
+                                    isParseable
+                                ) {
+                                    setTokenAmount(e.target.value);
+                                }
+                            },
+                            validate: (value) => {
+                                try {
+                                    if (!VALID_AMOUNT_REGEX.test(value) && isNaN(parseFloat(value))) {
+                                        return 'Not a valid number';
+                                    }
+
+                                    return (
+                                        Boolean(
+                                            parseUnits(value || '0', selectedToken?.decimals).gt(BigNumber.from('0'))
+                                        ) || 'Amount must be greater than 0'
+                                    );
+                                } catch (e) {
+                                    return 'Not a valid number';
+                                }
+                            },
+                        })}
+                    />
+                </InputGroup>
+                <FormErrorMessage my=".25rem">{errors.collateralAmount && errors.collateralAmount.message}</FormErrorMessage>
+            </FormControl>
+            <FormControl isInvalid={Boolean(errors.borrowToken?.message)} mt=".5rem">
+                <FormLabel>Borrow Token Select</FormLabel>
+                <TokenInput
+                    {...register('borrowToken')}
+                    onSelect={(token) => {
+                        setValue('borrowToken', token.name);
+                        setSelectedToken(token);
+                    }}
+                />
+            </FormControl>
+            <FormControl isInvalid={Boolean(errors.borrowAmount?.message)}>
+                <FormLabel>Borrow Amount</FormLabel>
+                <InputGroup size="lg" width="auto" height="4rem">
+                    <Input
+                        variant="outline"
+                        size="lg"
+                        pr="4.5rem"
+                        height="100%"
+                        placeholder="0.1"
+                        {...register('borrowAmount', {
+                            required: 'This is required',
+                            onChange: (e) => {
+                                const isParseable = isAmountParsable(e.target.value, selectedToken.decimals);
+                                if (
+                                    e.target.value &&
+                                    !isNaN(e.target.value) &&
+                                    VALID_AMOUNT_REGEX.test(e.target.value) &&
+                                    isParseable
+                                ) {
+                                    setTokenAmount(e.target.value);
+                                }
+                            },
+                            validate: (value) => {
+                                try {
+                                    if (!VALID_AMOUNT_REGEX.test(value) && isNaN(parseFloat(value))) {
+                                        return 'Not a valid number';
+                                    }
+
+                                    return (
+                                        Boolean(
+                                            parseUnits(value || '0', selectedToken?.decimals).gt(BigNumber.from('0'))
+                                        ) || 'Amount must be greater than 0'
+                                    );
+                                } catch (e) {
+                                    return 'Not a valid number';
+                                }
+                            },
+                        })}
+                    />
+                </InputGroup>
+                <FormErrorMessage my=".25rem">{errors.borrowAmount && errors.borrowAmount.message}</FormErrorMessage>
+            </FormControl>
+            <Button
+                isDisabled={!isConnected || chain?.unsupported}
+                // type="Deposit"
+                size="lg"
+                mt=".75rem"
+                width="100%"
+            >
+                Repay
+            </Button>
+            {selectedToken && (
+                <ReviewTransactionModal
+                    isOpen={isReviewOpen}
+                    onClose={closeReview}
+                    recipient={recipient}
+                    displayName={recipientDisplayName}
+                    token={selectedToken}
+                    amount={tokenAmount}
+                    onSubmitClick={() => {
+                        reset((values) => ({
+                            ...values,
+                            recipient: values.recipient,
+                            amount: '',
+                        }));
+                    }}
+                />
+            )}
+        </form>
+    )
+}
 
 export default LiquidityPool;
