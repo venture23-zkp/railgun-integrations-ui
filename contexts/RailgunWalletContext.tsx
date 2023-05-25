@@ -1,9 +1,16 @@
-import React, { ReactNode, createContext, useCallback, useContext, useState } from 'react';
-import { RailgunWallet } from '@railgun-community/engine';
+import React, {
+  ReactNode,
+  createContext,
+  useCallback,
+  useContext,
+  useState,
+} from 'react';
+import { RailgunWallet } from "@railgun-community/engine";
 import {
   createRailgunWallet,
   fullWalletForID,
   loadWalletByID,
+  refreshRailgunBalances,
 } from '@railgun-community/quickstart';
 import { ChainType, RailgunWalletInfo, networkForChain } from '@railgun-community/shared-models';
 import { randomBytes } from 'crypto';
@@ -38,6 +45,7 @@ export type RailgunWalletContextType = {
   }>;
   // eslint-disable-next-line no-unused-vars
   selectWallet: (walletId: string, password: string) => Promise<void>;
+  refreshBalances: () => Promise<void>;
 };
 
 const initialContext: RailgunWalletContextType = {
@@ -48,6 +56,7 @@ const initialContext: RailgunWalletContextType = {
     mnemonic: mnemonic || '',
   }),
   selectWallet: async () => {},
+  refreshBalances: async () => {},
 };
 
 const RailgunWalletContext = createContext<RailgunWalletContextType>(initialContext);
@@ -55,7 +64,9 @@ const RailgunWalletContext = createContext<RailgunWalletContextType>(initialCont
 export const RailgunWalletProvider = ({ children }: { children: ReactNode }) => {
   const [wallet, setWallet] = useState<RailgunWallet>();
   const [encryptionKey, setEncryptionKey] = useState<string>();
-  const { chains } = useNetwork();
+
+  const { chain, chains } = useNetwork();
+  const chainId = chain?.id || 1;
 
   const { setItem } = useLocalForageSet();
   const { isLoading, data: walletList } = useLocalForageGet<RailgunWalletInfo[]>({
@@ -131,6 +142,21 @@ export const RailgunWalletProvider = ({ children }: { children: ReactNode }) => 
     [walletExists]
   );
 
+  const refreshBalances = useCallback(
+    async (fullRescan: boolean = false) => {
+      if (!wallet?.id) return;
+      const { error } = await refreshRailgunBalances(
+        { type: ChainType.EVM, id: chainId },
+        wallet?.id,
+        fullRescan
+      );
+      if (error) {
+        throw new Error(`refreshBalances(${wallet?.id}): ${error}`);
+      }
+    },
+    [wallet?.id, chainId]
+  );
+
   return (
     <RailgunWalletContext.Provider
       value={{
@@ -140,6 +166,7 @@ export const RailgunWalletProvider = ({ children }: { children: ReactNode }) => 
         walletList: walletList || [],
         createWallet,
         selectWallet,
+        refreshBalances,
       }}
     >
       {children}

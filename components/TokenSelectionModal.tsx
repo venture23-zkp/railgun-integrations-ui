@@ -237,7 +237,7 @@ const CustomTokenSelectionItem = ({ onSelect, tokenAddress }: CustomTokenSelecti
 const TokenSelectionModal = (props: TokenSelectionModalProps) => {
   const { tokenList } = useToken();
   const [searchTerm, setSearchTerm] = useState('');
-  const { isLoading: isBalanceLoading, updateBalances } = useToken();
+  const { isLoading: isBalanceLoading, refreshBalances } = useToken();
   const options = {
     includeScore: true,
     keys: ['address', 'name', 'symbol'],
@@ -280,7 +280,7 @@ const TokenSelectionModal = (props: TokenSelectionModalProps) => {
               aria-label='Refresh acount balances'
               icon={<RepeatIcon />} 
               onClick={() => {
-                if (!isBalanceLoading) updateBalances()
+                if (!isBalanceLoading) refreshBalances()
               }}/>
           </Flex>
           <Flex direction="column" paddingTop="1rem">
