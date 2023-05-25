@@ -34,6 +34,7 @@ type TokenSelectionModalProps = {
   isOpen: boolean;
   onClose: () => void;
   onSelect: (arg0: TokenListContextItem) => void; // eslint-disable-line no-unused-vars
+  exclude?: string[];
 };
 
 type TokenSelectionItemProps = {
@@ -86,20 +87,20 @@ const TokenSelectionItem = ({ token, onClick, isBalanceLoading }: TokenSelection
           <Spinner />
         ) : (
           <>
-          <Text fontSize="md">
-            {FixedNumber.from(
-              formatUnits(tokenBalance.toString() || '0', token?.decimals || 0).toString()
-            )
-              .round(4)
-              .toString() || 0}
-          </Text>
-          <Text fontSize="xs">
-            {FixedNumber.from(
-              formatUnits(privateBalance.toString() || '0', token?.decimals || 0).toString()
-            )
-              .round(4)
-              .toString() || 0}
-          </Text>
+            <Text fontSize="md">
+              {FixedNumber.from(
+                formatUnits(tokenBalance.toString() || '0', token?.decimals || 0).toString()
+              )
+                .round(4)
+                .toString() || 0}
+            </Text>
+            <Text fontSize="xs">
+              {FixedNumber.from(
+                formatUnits(privateBalance.toString() || '0', token?.decimals || 0).toString()
+              )
+                .round(4)
+                .toString() || 0}
+            </Text>
           </>
         )}
       </Flex>
@@ -172,7 +173,13 @@ const CustomTokenSelectionItem = ({ onSelect, tokenAddress }: CustomTokenSelecti
   }
 
   if (data) {
-    const token = { ...data, logoURI: '', chainId: chain!.id, balance: balanceData?.value || null, privateBalance: null };
+    const token = {
+      ...data,
+      logoURI: '',
+      chainId: chain!.id,
+      balance: balanceData?.value || null,
+      privateBalance: null,
+    };
     return (
       <>
         <TokenSelectionItem token={token} onClick={openModal} isBalanceLoading={isBalanceLoading} />
@@ -253,6 +260,7 @@ const TokenSelectionModal = (props: TokenSelectionModalProps) => {
   } else {
     allResults = results.slice(0, 5).map((item) => item.item);
   }
+  allResults = allResults.filter(({ address }) => !props.exclude?.includes(address));
 
   return (
     <Modal onClose={props.onClose} isOpen={props.isOpen} isCentered>
@@ -277,11 +285,12 @@ const TokenSelectionModal = (props: TokenSelectionModalProps) => {
               marginLeft="1"
               variant="outline"
               boxSize={12}
-              aria-label='Refresh acount balances'
-              icon={<RepeatIcon />} 
+              aria-label="Refresh acount balances"
+              icon={<RepeatIcon />}
               onClick={() => {
-                if (!isBalanceLoading) refreshBalances()
-              }}/>
+                if (!isBalanceLoading) refreshBalances();
+              }}
+            />
           </Flex>
           <Flex direction="column" paddingTop="1rem">
             {results.length === 0 && isAddress(searchTerm) ? (

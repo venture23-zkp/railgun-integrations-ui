@@ -7,11 +7,12 @@ import TokenSelectionModal from '@/components/TokenSelectionModal';
 import { TokenListContextItem } from '@/contexts/TokenContext';
 
 type TokenInputProps = {
+  exclude?: string[];
   onSelect: (token: TokenListContextItem) => void; // eslint-disable-line no-unused-vars
 } & UseFormRegisterReturn;
 
 const TokenInput = React.forwardRef(
-  ({ onSelect, ...rest }: TokenInputProps, ref: React.Ref<HTMLInputElement>) => {
+  ({ onSelect, exclude, ...rest }: TokenInputProps, ref: React.Ref<HTMLInputElement>) => {
     const {
       isOpen: isTokenSelectionOpen,
       onOpen: onTokenSelectionOpen,
@@ -38,6 +39,7 @@ const TokenInput = React.forwardRef(
           </InputRightElement>
         </InputGroup>
         <TokenSelectionModal
+          exclude={exclude}
           isOpen={isTokenSelectionOpen}
           onClose={onTokenSelectionClose}
           onSelect={localOnSelect}
