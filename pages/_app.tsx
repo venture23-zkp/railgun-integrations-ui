@@ -1,10 +1,8 @@
-import { useEffect } from 'react';
 import type { AppProps } from 'next/app';
 import Head from 'next/head';
 import { Grid, GridItem } from '@chakra-ui/layout';
 import { ChakraProvider } from '@chakra-ui/react';
 import { extendTheme } from '@chakra-ui/theme-utils';
-import { Groth16, getProver } from '@railgun-community/quickstart';
 import { RainbowKitProvider, getDefaultWallets } from '@rainbow-me/rainbowkit';
 import '@rainbow-me/rainbowkit/styles.css';
 import { WagmiConfig, createClient } from 'wagmi';
@@ -16,7 +14,6 @@ import { TokenListProvider } from '@/contexts/TokenContext';
 import { useRailgunProvider } from '@/hooks/useRailgunProvider';
 import '@/styles/globals.css';
 import { chains, provider, webSocketProvider } from '@/utils/networks';
-import { initialize } from '@/utils/railgun';
 
 const APP_TITLE = 'Railgun Integration UI';
 
@@ -44,10 +41,6 @@ const wagmiClient = createClient({
 });
 
 function MyApp({ Component, pageProps }: AppProps) {
-  useEffect(() => {
-    initialize();
-    getProver().setSnarkJSGroth16((window as any).snarkjs.groth16 as Groth16);
-  }, []);
   const { isProviderLoaded, shieldingFees, unshieldingFees } = useRailgunProvider();
   return (
     <>
