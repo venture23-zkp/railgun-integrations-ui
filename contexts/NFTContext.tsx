@@ -1,19 +1,10 @@
-import React, {
-  ReactNode,
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-} from 'react';
+import React, { ReactNode, createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { Balances, TokenType } from '@railgun-community/engine';
-import {
-  parseRailgunTokenAddress,
-} from '@railgun-community/quickstart';
+import { parseRailgunTokenAddress } from '@railgun-community/quickstart';
 import { ChainType } from '@railgun-community/shared-models';
 import { useNetwork } from 'wagmi';
 import { NFTListItem, useNFTList } from '@/hooks/useNFTList';
 import { useRailgunWallet } from './RailgunWalletContext';
-
 
 function getNFTBalances(balances: Balances, nftAddresses?: string[]) {
   const nftAddressMap = nftAddresses?.reduce((acc, address) => {
@@ -52,12 +43,12 @@ export type NFTListContextItem = NFTListItem & {
 };
 
 export type NFTContextType = {
-  isLoading: boolean;
+  hasLoaded: boolean;
   nftList: NFTListContextItem[];
 };
 
 const initialContext = {
-  isLoading: false,
+  hasLoaded: false,
   nftList: [],
 };
 
@@ -65,20 +56,19 @@ const NFTContext = createContext<NFTContextType>(initialContext);
 
 export const NFTListProvider = ({ children }: { children: ReactNode }) => {
   const { chain } = useNetwork();
-  const chainId = chain?.id || 1;
-
+  const chainId = useMemo(() => chain?.id || 1, [chain]);
   const { nftList } = useNFTList();
   const { wallet } = useRailgunWallet();
-
-  const [isLoading, setIsLoading] = useState(false);
-  const [nftListWithPrivateBalance, setNFTListWithPrivateBalance] = useState<NFTListContextItem[]>(
-    []
-  );
+  const [hasLoaded, setHasLoaded] = useState(false);
+  const [nftListWithBalance, setNFTListWithBalance] = useState<NFTListContextItem[]>([]);
 
   useEffect(() => {
+    setHasLoaded(false);
+  }, [chainId, wallet, nftList]);
+
+  useEffect(() => {
+    if (hasLoaded) return;
     const fn = async () => {
-      if (isLoading) return;
-      setIsLoading(true);
       const balances = await wallet?.balances({ id: chainId, type: ChainType.EVM });
       if (balances) {
         const nftBalances = getNFTBalances(
@@ -93,18 +83,18 @@ export const NFTListProvider = ({ children }: { children: ReactNode }) => {
             privateSubIds: nftBalance ? nftBalance.subIds : [],
           };
         });
-        setNFTListWithPrivateBalance(newNFTList);
+        setNFTListWithBalance(newNFTList);
       }
-      setIsLoading(false);
+      setHasLoaded(true);
     };
     fn();
-  }, [isLoading, chainId, wallet, nftList]);
+  }, [hasLoaded, chainId, nftList, wallet]);
 
   return (
     <NFTContext.Provider
       value={{
-        isLoading,
-        nftList: nftListWithPrivateBalance || [],
+        hasLoaded,
+        nftList: nftListWithBalance || [],
       }}
     >
       {children}
