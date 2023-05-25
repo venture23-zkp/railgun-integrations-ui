@@ -6,7 +6,6 @@ import React, {
   useEffect,
   useState,
 } from 'react';
-import { refreshRailgunBalances, setOnBalanceUpdateCallback } from '@railgun-community/quickstart';
 import { ChainType } from '@railgun-community/shared-models';
 import { BigNumber } from 'ethers';
 import { useAccount, useNetwork } from 'wagmi';
@@ -27,7 +26,7 @@ export type TokenContextType = {
   tokenAllowances: Map<string, BigNumber>;
   shieldingFees: { [key: number]: BigNumber };
   unshieldingFees: { [key: number]: BigNumber };
-  updateBalances: () => Promise<void>;
+  refreshBalances: () => Promise<void>;
 };
 const initialContext = {
   isLoading: false,
@@ -35,7 +34,7 @@ const initialContext = {
   tokenAllowances: new Map(),
   shieldingFees: {},
   unshieldingFees: {},
-  updateBalances: async () => {},
+  refreshBalances: async () => {},
 };
 
 const TokenContext = createContext<TokenContextType>(initialContext);
@@ -56,7 +55,7 @@ export const TokenListProvider = ({
   const { tokenList } = useTokenList();
   const { isConnected } = useAccount();
 
-  const { wallet } = useRailgunWallet();
+  const { wallet, refreshBalances: refreshRailgunBalances } = useRailgunWallet();
 
   const [tokenListWithPrivateBalance, setTokenListWithPrivateBalance] = useState<
     TokenListContextItem[]
@@ -89,27 +88,9 @@ export const TokenListProvider = ({
     });
   }
 
-  const updateBalances = useCallback(async () => {
-    await Promise.all([
-      refetchPublicBalances(),
-      refreshRailgunBalances(
-        {
-          id: chainId,
-          type: ChainType.EVM,
-        },
-        wallet?.id!,
-        false
-      ),
-    ]);
-  }, [refetchPublicBalances, wallet?.id, chainId]);
-
-  useEffect(() => {
-    setOnBalanceUpdateCallback(async ({ railgunWalletID }) => {
-      if (wallet?.getAddress() === railgunWalletID) {
-        await updateBalances();
-      }
-    });
-  }, [wallet, updateBalances]);
+  const refreshBalances = useCallback(async () => {
+    await Promise.all([refetchPublicBalances(), refreshRailgunBalances()]);
+  }, [refetchPublicBalances, refreshRailgunBalances]);
 
   useEffect(() => {
     const fn = async () => {
@@ -144,7 +125,7 @@ export const TokenListProvider = ({
         tokenAllowances: allowances || new Map(),
         shieldingFees,
         unshieldingFees,
-        updateBalances,
+        refreshBalances,
       }}
     >
       {children}
