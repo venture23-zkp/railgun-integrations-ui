@@ -1,8 +1,11 @@
+
 import React, { useState } from 'react';
 import { useCallback } from 'react';
-import { AddIcon, CopyIcon, LockIcon, UnlockIcon } from '@chakra-ui/icons';
 import {
+  Alert,
+  AlertIcon,
   Button,
+  Flex,
   FormControl,
   FormErrorMessage,
   FormLabel,
@@ -17,91 +20,70 @@ import {
   ModalHeader,
   ModalOverlay,
   UseModalProps,
-  useToast,
 } from '@chakra-ui/react';
-import { readContract, writeContract, prepareWriteContract } from '@wagmi/core';
+import { readContract } from '@wagmi/core';
 import { randomBytes } from 'crypto';
 import { BigNumber } from 'ethers';
-
+import { useNetwork } from 'wagmi';
+import useNotifications from '@/hooks/useNotifications';
+import useRailgunTx from '@/hooks/useRailgunTx';
+import { getNetwork } from '@/utils/networks';
+import { abi } from './abi-typechain/abi';
+import { ACMSetupACRecipe } from './recipes/acm/ACMSetupACRecipe';
+import { SNARK_SCALAR_FIELD } from './utils/big-number';
+import { CONTRACT_ADDRESS as ACM_CONTRACT_ADDRESS } from './contract/acm';
 
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
-const ACM_CONTRACT_ADDRESS = '0x92F8B8B507Bb7742a0EC7336c22FaB1d0CBe2154';
-const acmABI = [
-  {
-    type: 'function',
-    name: 'nftAc',
-    stateMutability: 'view',
-    inputs: [
-      {
-        name: '',
-        type: 'uint256',
-      },
-    ],
-    outputs: [
-      {
-        name: '',
-        type: 'address',
-      },
-    ],
-  },
-  {
-    type: 'function',
-    name: 'setupAC',
-    stateMutability: 'nonpayable',
-    inputs: [
-      {
-        name: '_id',
-        type: 'uint256',
-      },
-    ],
-    outputs: [],
-  },
-];
 
 const SetupACModal = ({ isOpen, onClose }: UseModalProps) => {
+  const { chain } = useNetwork();
+  const chainId = chain?.id || 1;
+  const { railgunNetworkName: networkName } = getNetwork(chainId);
+  const { executeRecipe } = useRailgunTx();
+  const { txNotify } = useNotifications();
+
   const [nftId, setNFTId] = useState<string>('');
-  const [error, setError] = useState<string>('');
-
-  const toast = useToast();
-
-  const genRandomNFTId = useCallback(() => {
-    setNFTId(BigNumber.from(randomBytes(32)).toString());
-  }, []);
+  const [nftIdInputError, setNFTIdInputError] = useState<string>('');
+  const [txError, setTxError] = useState<string>();
 
   const handleSubmit = useCallback(
     async (e: React.SyntheticEvent) => {
-      const id = 'setup_ac';
       e.stopPropagation();
 
       const nftIdArg = BigNumber.from(nftId);
 
       const address = await readContract({
-        // abi: new Interface(["nftAc(uint256) view returns (address)"]).getFunction(),
-        abi: acmABI,
+        abi: abi.ACM,
         address: ACM_CONTRACT_ADDRESS,
         functionName: 'nftAc',
         args: [nftIdArg],
       });
 
-      console.log('addressnft', address, ZERO_ADDRESS);
-
       const nftIsAvailable = address === ZERO_ADDRESS;
 
       if (!nftIsAvailable) {
-        setError('Account ID is available!');
+        setNFTIdInputError('Account ID is available!');
         return;
       }
 
-      const config = await prepareWriteContract({
-        abi: acmABI,
-        address: ACM_CONTRACT_ADDRESS,
-        functionName: "setupAC",
-        args: [nftIdArg],
-      });
+      const setupAc = new ACMSetupACRecipe(nftId, ACM_CONTRACT_ADDRESS);
 
-      console.log("prepareWrite", config)
+      try {
+        setTxError(undefined);
+        const tx = await executeRecipe(setupAc, {
+          networkName,
+          erc20Amounts: [],
+          nfts: [],
+        });
+        txNotify(tx.hash);
+        onClose();
+      } catch (e) {
+        console.error(e);
+        const err = e as Error & { reason?: string };
+        setTxError(err.reason ? err.reason : err.message);
+      }
     },
-    [nftId, toast]
+    [networkName, nftId, executeRecipe, txNotify, onClose]
   );
 
   return (
@@ -111,7 +93,7 @@ const SetupACModal = ({ isOpen, onClose }: UseModalProps) => {
         <ModalHeader>Setup Public Account</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          <FormControl isRequired={true} isInvalid={error !== ''}>
+          <FormControl isRequired={true} isInvalid={nftIdInputError !== ''}>
             <FormLabel>Account ID</FormLabel>
             <InputGroup size="lg">
               <Input
@@ -125,16 +107,36 @@ const SetupACModal = ({ isOpen, onClose }: UseModalProps) => {
                     BigNumber.from(value);
                     setNFTId(value);
                   } catch (error) {
-                    setError(error as string);
+                    setNFTIdInputError(error as string);
                   }
                 }}
               />
               <InputRightElement width="4.5rem">
-                <Button onClick={genRandomNFTId}>Auto</Button>
+                <Button
+                  onClick={() => {
+                    setNFTId(BigNumber.from(randomBytes(32)).mod(SNARK_SCALAR_FIELD).toString());
+                  }}
+                >
+                  Auto
+                </Button>
               </InputRightElement>
             </InputGroup>
-            <FormErrorMessage>{error}</FormErrorMessage>
+            <FormErrorMessage>{nftIdInputError}</FormErrorMessage>
           </FormControl>
+          {txError && (
+            <Alert
+              status="error"
+              mt=".5rem"
+              borderRadius="md"
+              wordBreak={'break-word'}
+              maxH={'3xs'}
+              overflowY={'auto'}
+              alignItems={'flex-start'}
+            >
+              <AlertIcon />
+              <Flex>{txError}</Flex>
+            </Alert>
+          )}
         </ModalBody>
         <ModalFooter justifyContent="center">
           <Button mr={3} onClick={handleSubmit}>
