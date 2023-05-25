@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useState } from 'react';
 import { useNetwork } from 'wagmi';
 import useLocalForageGet from '@/hooks/useLocalForageGet';
 import nftListJson from '@/public/nftlist.json';
@@ -13,14 +14,18 @@ export interface NFTListItem {
 
 export const useNFTList = () => {
   const { chain } = useNetwork();
-  const chainId = chain?.id || 1; // default to mainnet if no chain id
+  const chainId = useMemo(() => chain?.id || 1, [chain]);
 
-  const nftList = nftListJson.tokens.filter((token) => token.chainId === chainId);
+  const [nftList, setNFTList] = useState<NFTListItem[]>([]);
 
   const { data: localNFTList } = useLocalForageGet<NFTListItem[]>({
     itemPath: CUSTOM_NFTS_STORAGE_KEY,
   });
 
-  const localNFTs = localNFTList || [];
-  return { nftList: [...nftList, ...localNFTs] };
+  useEffect(() => {
+    const nftList = nftListJson.tokens.filter((token) => token.chainId === chainId);
+    setNFTList([...nftList, ...(localNFTList || [])]);
+  }, [chainId, localNFTList]);
+
+  return { nftList };
 };
