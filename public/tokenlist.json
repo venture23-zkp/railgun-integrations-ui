@@ -8625,7 +8625,7 @@
       "address": "0x65aFADD39029741B3b8f0756952C74678c9cEC93",
       "name": "USDC",
       "symbol": "USDC",
-      "decimals": 18,
+      "decimals": 6,
       "logoURI": "https://assets.coingecko.com/coins/images/6319/thumb/USD_Coin_icon.png?1608803028",
       "aaveSupported": true
     },
@@ -8643,7 +8643,7 @@
       "address": "0xBC33cfbD55EA6e5B97C6da26F11160ae82216E2b",
       "name": "EURS",
       "symbol": "EURS",
-      "decimals": 18,
+      "decimals": 2,
       "logoURI": "https://assets.coingecko.com/coins/images/5164/thumb/EURS_300x300.png?1608803028",
       "aaveSupported": true
     },
