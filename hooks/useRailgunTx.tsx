@@ -168,7 +168,7 @@ const useRailgunTx = () => {
       evmGasType: EVMGasType.Type2, // Depends on the chain (BNB uses type 0)
       gasEstimateString: '0x00', // Always 0, we don't have this yet.
       maxFeePerGasString: feeData?.maxFeePerGas?.toHexString() || '0x100000', // Current gas Max Fee
-      maxPriorityFeePerGasString: feeData?.maxPriorityFeePerGas?.mul(2).toHexString() || '0x010000', // Current gas Max Priority Fee
+      maxPriorityFeePerGasString: feeData?.maxPriorityFeePerGas?.toHexString() || '0x010000', // Current gas Max Priority Fee
     };
     const feeTokenDetails = undefined;
 
@@ -284,7 +284,7 @@ const useRailgunTx = () => {
       evmGasType: EVMGasType.Type2, // Depends on the chain (BNB uses type 0)
       gasEstimateString: '0x00', // Always 0, we don't have this yet.
       maxFeePerGasString: feeData?.maxFeePerGas?.toHexString() || '0x100000', // Current gas Max Fee
-      maxPriorityFeePerGasString: feeData?.maxPriorityFeePerGas?.mul(2).toHexString() || '0x010000', // Current gas Max Priority Fee
+      maxPriorityFeePerGasString: feeData?.maxPriorityFeePerGas?.toHexString() || '0x010000', // Current gas Max Priority Fee
     };
     const feeTokenDetails = undefined;
 
@@ -415,7 +415,7 @@ const useRailgunTx = () => {
       evmGasType: EVMGasType.Type2, // Depends on the chain (BNB uses type 0)
       gasEstimateString: '0x00', // Always 0, we don't have this yet.
       maxFeePerGasString: feeData?.maxFeePerGas?.toHexString() || '0x100000', // Current gas Max Fee
-      maxPriorityFeePerGasString: feeData?.maxPriorityFeePerGas?.mul(2).toHexString() || '0x010000', // Current gas Max Priority Fee
+      maxPriorityFeePerGasString: feeData?.maxPriorityFeePerGas?.toHexString() || '0x010000', // Current gas Max Priority Fee
     };
     const feeTokenDetails = undefined;
 
@@ -551,7 +551,7 @@ const useRailgunTx = () => {
       evmGasType: EVMGasType.Type2, // Depends on the chain (BNB uses type 0)
       gasEstimateString: '0x00', // Always 0, we don't have this yet.
       maxFeePerGasString: feeData?.maxFeePerGas?.toHexString() || '0x100000', // Current gas Max Fee
-      maxPriorityFeePerGasString: feeData?.maxPriorityFeePerGas?.mul(2).toHexString() || '0x010000', // Current gas Max Priority Fee
+      maxPriorityFeePerGasString: feeData?.maxPriorityFeePerGas?.toHexString() || '0x010000', // Current gas Max Priority Fee
     };
     const feeTokenDetails = undefined;
 
