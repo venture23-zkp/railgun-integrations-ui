@@ -14,7 +14,8 @@
             "name": "AAVE",
             "symbol": "AAVE",
             "decimals": 18,
-            "logoURI": "https://assets.coingecko.com/coins/images/12645/thumb/AAVE.png?1608803028"
+            "logoURI": "https://assets.coingecko.com/coins/images/12645/thumb/AAVE.png?1608803028",
+            "aaveSupported": true
         },
         {
             "chainId": 5,
@@ -22,7 +23,8 @@
             "name": "DAI",
             "symbol": "DAI",
             "decimals": 18,
-            "logoURI": "https://assets.coingecko.com/coins/images/9956/thumb/4943.png?1608803028"
+            "logoURI": "https://assets.coingecko.com/coins/images/9956/thumb/4943.png?1608803028",
+            "aaveSupported": true
         },
         {
             "chainId": 5,
@@ -30,7 +32,8 @@
             "name": "LINK",
             "symbol": "LINK",
             "decimals": 18,
-            "logoURI": "https://assets.coingecko.com/coins/images/6450/thumb/linklogo.png?1608803028"
+            "logoURI": "https://assets.coingecko.com/coins/images/6450/thumb/linklogo.png?1608803028",
+            "aaveSupported": true
         },
         {
             "chainId": 5,
@@ -38,7 +41,8 @@
             "name": "USDC",
             "symbol": "USDC",
             "decimals": 18,
-            "logoURI": "https://assets.coingecko.com/coins/images/6319/thumb/USD_Coin_icon.png?1608803028"
+            "logoURI": "https://assets.coingecko.com/coins/images/6319/thumb/USD_Coin_icon.png?1608803028",
+            "aaveSupported": true
         },
         {
             "chainId": 5,
@@ -46,7 +50,8 @@
             "name": "WBTC",
             "symbol": "WBTC",
             "decimals": 18,
-            "logoURI": "https://assets.coingecko.com/coins/images/7598/thumb/wrapped_bitcoin_wbtc.png?1608803028"
+            "logoURI": "https://assets.coingecko.com/coins/images/7598/thumb/wrapped_bitcoin_wbtc.png?1608803028",
+            "aaveSupported": true
         },
         {
             "chainId": 5,
@@ -54,7 +59,8 @@
             "name": "EURS",
             "symbol": "EURS",
             "decimals": 18,
-            "logoURI": "https://assets.coingecko.com/coins/images/5164/thumb/EURS_300x300.png?1608803028"
+            "logoURI": "https://assets.coingecko.com/coins/images/5164/thumb/EURS_300x300.png?1608803028",
+            "aaveSupported": true
         },
         {
             "chainId": 5,
@@ -62,7 +68,8 @@
             "name": "USDT",
             "symbol": "USDT",
             "decimals": 18,
-            "logoURI": "https://assets.coingecko.com/coins/images/325/thumb/Tether.png?1608803028"
+            "logoURI": "https://assets.coingecko.com/coins/images/325/thumb/Tether.png?1608803028",
+            "aaveSupported": true
         },
         {
             "chainId": 5,
@@ -70,7 +77,8 @@
             "name": "Wrapped Ether",
             "symbol": "WETH",
             "decimals": 18,
-            "logoURI": "https://assets.coingecko.com/coins/images/2518/thumb/weth.png?1608803028"
+            "logoURI": "https://assets.coingecko.com/coins/images/2518/thumb/weth.png?1608803028",
+            "aaveSupported": true
         }
     ]
 }

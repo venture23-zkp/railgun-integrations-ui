@@ -29,12 +29,14 @@ import { TokenListItem } from '@/hooks/useTokenList';
 import { CUSTOM_TOKENS_STORAGE_KEY, ipfsDomain, rebaseTokens } from '@/utils/constants';
 import { parseIPFSUri } from '@/utils/ipfs';
 import { getNetwork } from '@/utils/networks';
+import TokenFilterType from '@/types/TokenFilterType';
 
 type TokenSelectionModalProps = {
   isOpen: boolean;
   onClose: () => void;
   onSelect: (arg0: TokenListContextItem) => void; // eslint-disable-line no-unused-vars
   exclude?: string[];
+  tokenFilter?: TokenFilterType
 };
 
 type TokenSelectionItemProps = {
@@ -260,7 +262,20 @@ const TokenSelectionModal = (props: TokenSelectionModalProps) => {
   } else {
     allResults = results.slice(0, 5).map((item) => item.item);
   }
-  allResults = allResults.filter(({ address }) => !props.exclude?.includes(address));
+
+  allResults = allResults.filter((token) => {
+    if (props.exclude?.includes(token.address)) return false;
+    const tokenFilter = props.tokenFilter;
+    if (tokenFilter) {
+      for (let key of Object.keys(tokenFilter)) {
+        // @ts-ignore
+        if (token[key] !== tokenFilter[key]) {
+          return false;
+        }
+      }
+    }
+    return true;
+  });
 
   return (
     <Modal onClose={props.onClose} isOpen={props.isOpen} isCentered>

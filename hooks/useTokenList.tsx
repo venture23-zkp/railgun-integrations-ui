@@ -11,6 +11,7 @@ export interface TokenListItem {
   decimals: number;
   name: string;
   logoURI: string;
+  aaveSupported?: boolean;
 }
 
 export const useTokenList = () => {

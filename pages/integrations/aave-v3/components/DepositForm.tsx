@@ -76,6 +76,9 @@ const DepositForm = ({ id }: Account) => {
             setValue('token', token.name);
             setSelectedToken(token);
           }}
+          tokenFilter={{
+            aaveSupported: true
+          }}
         />
       </FormControl>
       <FormControl isInvalid={Boolean(errors.amount?.message)}>
