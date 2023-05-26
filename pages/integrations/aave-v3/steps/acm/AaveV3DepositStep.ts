@@ -34,12 +34,15 @@ export class AaveV3DepositStep extends Step {
   protected async getStepOutput(input: StepInput): Promise<UnvalidatedStepOutput> {
     const { id, tokenAddress, amount } = this.data;
     const contract = new ACM(this.acm);
+    
+    const amountAfterFee = amount.sub(amount.mul(25).div(10000));
     const spentToken: RecipeERC20AmountRecipient = {
-      amount: amount,
+      amount: amountAfterFee,
       decimals: this.decimals,
       tokenAddress: tokenAddress,
       recipient: this.acm,
     };
+
     const populatedTransaction = await contract.createDeposit(id, tokenAddress, amount);
     return {
       populatedTransactions: [populatedTransaction],

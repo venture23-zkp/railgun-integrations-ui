@@ -27,6 +27,7 @@ import {
   deserializeTransaction,
   serializeUnsignedTransaction,
 } from '@railgun-community/shared-models';
+import { setRailgunFees } from "@railgun-community/cookbook";
 import { ethers } from 'ethers';
 import { isAddress } from 'ethers/lib/utils.js';
 import { useSigner } from 'wagmi';
@@ -525,6 +526,12 @@ const useRailgunTx = () => {
       erc20Amounts: inputERC20Amounts,
       nfts: relayAdaptUnshieldNFTAmounts,
     } = input;
+
+    setRailgunFees(
+      networkName,
+      '25',
+      '25',
+    );
 
     const recipeOutput = await recipe.getRecipeOutput(input);
     console.log(recipeOutput);
