@@ -28,10 +28,10 @@ import { useNetwork } from 'wagmi';
 import useNotifications from '@/hooks/useNotifications';
 import useRailgunTx from '@/hooks/useRailgunTx';
 import { getNetwork } from '@/utils/networks';
-import { abi } from './abi-typechain/abi';
+import { abi } from '@/abi-typechain/abi';
 import { ACMSetupACRecipe } from './recipes/acm/ACMSetupACRecipe';
 import { SNARK_SCALAR_FIELD } from './utils/big-number';
-import { CONTRACT_ADDRESS as ACM_CONTRACT_ADDRESS } from './contract/acm';
+import { CONTRACT_ADDRESS as ACM_CONTRACT_ADDRESS } from '@/contract/acm';
 
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 

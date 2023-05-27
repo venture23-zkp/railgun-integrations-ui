@@ -1,7 +1,7 @@
 import { BigNumber } from '@ethersproject/bignumber';
 import { Step, StepInput, UnvalidatedStepOutput } from '@railgun-community/cookbook';
 import { NFTTokenType } from '@railgun-community/shared-models';
-import { ACM } from '../../contract/acm';
+import { ACM } from '@/contract/acm';
 import { Address } from '../../utils/address';
 
 

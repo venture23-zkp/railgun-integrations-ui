@@ -6,6 +6,7 @@ const useLocalForageGet = <T,>({ itemPath }: { itemPath: string }) => {
     const item = await localforage.getItem<T>(itemPath);
     return item;
   });
+
   return {
     isLoading: isLoading,
     error: error,

@@ -34,7 +34,7 @@ const initialContext = {
   tokenAllowances: new Map(),
   shieldingFees: {},
   unshieldingFees: {},
-  refreshBalances: async () => {},
+  refreshBalances: async () => { },
 };
 
 const TokenContext = createContext<TokenContextType>(initialContext);

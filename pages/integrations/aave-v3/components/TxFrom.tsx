@@ -19,17 +19,13 @@ import BorrowForm from './BorrowForm';
 import DepositForm from './DepositForm';
 import RepayForm from './RepayForm';
 import WithdrawForm from './WithdrawForm';
-
-export type Account = {
-  id: string;
-  contract: string;
-};
+import AcmAccount from '@/types/AcmAccount';
 
 const TxFrom = ({
   account,
   handleBackClick,
 }: {
-  account: Account;
+  account: AcmAccount;
   handleBackClick: () => void;
 }) => {
   return (

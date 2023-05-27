@@ -1,6 +1,6 @@
 import { Contract, PopulatedTransaction } from '@ethersproject/contracts';
-import { abi } from '../abi-typechain/abi';
-import { validateAddress } from '../utils/address';
+import { abi } from '@/abi-typechain/abi';
+import { validateAddress } from '../pages/integrations/aave-v3/utils/address';
 import { BigNumber } from '@ethersproject/bignumber';
 import { BaseProvider } from '@ethersproject/providers';
 import { AddressContractManager } from '../abi-typechain/acm/ACM';

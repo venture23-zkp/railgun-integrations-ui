@@ -5,7 +5,7 @@ import {
   StepInput,
   UnvalidatedStepOutput,
 } from '@railgun-community/cookbook';
-import { ACM } from '../../contract/acm';
+import { ACM } from '@/contract/acm';
 import { Address } from '../../utils/address';
 
 export type AaveV3RepayData = {

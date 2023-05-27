@@ -541,7 +541,7 @@ const useRailgunTx = () => {
       erc20Amounts,
       nfts: relayAdaptShieldNFTs,
     } = recipeOutput;
-    
+
     const crossContractCallsSerialized = populatedTransactions.map(serializeUnsignedTransaction);
 
     const relayAdaptUnshieldERC20Amounts: RailgunERC20Amount[] = inputERC20Amounts.map(
@@ -566,6 +566,7 @@ const useRailgunTx = () => {
     // true for self-signing, false for Relayer
     const sendWithPublicWallet = true;
 
+    console.log(">>> here 1")
     const { gasEstimateString, error: gasEstimateForUnprovenCrossContractCallsError } =
       await gasEstimateForUnprovenCrossContractCalls(
         networkName,
@@ -580,9 +581,12 @@ const useRailgunTx = () => {
         feeTokenDetails,
         sendWithPublicWallet
       );
+    console.log(">>> here 2")
     if (gasEstimateForUnprovenCrossContractCallsError || gasEstimateString === undefined) {
       throw new Error(gasEstimateForUnprovenCrossContractCallsError || 'No gasEstimateString!');
     }
+
+    console.log(">>> here 3")
 
     const relayerFeeERC20AmountRecipient = undefined;
 

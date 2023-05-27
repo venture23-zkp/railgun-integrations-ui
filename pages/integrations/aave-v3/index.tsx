@@ -2,41 +2,20 @@
 import { useEffect, useState } from 'react';
 import { AddIcon } from '@chakra-ui/icons';
 import { Box, Card, CardBody, Flex, Heading, IconButton, Stack, Text } from '@chakra-ui/react';
-import { readContracts } from 'wagmi';
 import { useNFT } from '@/contexts/NFTContext';
 import { shortenAddress } from '@/utils/address';
 import SetupACModal from './SetupACModal';
-import { abi } from './abi-typechain/abi';
-import TxFrom, { Account } from './components/TxFrom';
-import { CONTRACT_ADDRESS as ACM_CONTRACT_ADDRESS } from './contract/acm';
+import { abi } from '@/abi-typechain/abi';
+import TxFrom from './components/TxFrom';
+import AcmAccountType from '@/types/AcmAccount';
 
 type ACMAccountListProps = {
   // eslint-disable-next-line no-unused-vars
-  onClick: (account: Account) => void;
+  onClick: (account: AcmAccountType) => void;
 };
 
 const ACMAccountList = ({ onClick }: ACMAccountListProps) => {
-  const { nftList, hasLoaded: nftListHasLoaded } = useNFT();
-  const [accounts, setAccounts] = useState<Account[]>([]);
-
-  useEffect(() => {
-    if (!nftListHasLoaded) return;
-    const fn = async () => {
-      const acm = nftList.find(({ address }) => address === ACM_CONTRACT_ADDRESS);
-      if (!acm) return;
-      const accountIds = acm.privateSubIds;
-      const contracts = (await readContracts({
-        contracts: accountIds.map((accountId) => ({
-          abi: abi.ACM,
-          address: ACM_CONTRACT_ADDRESS,
-          functionName: 'nftAc',
-          args: [accountId],
-        })),
-      })) as string[];
-      setAccounts(accountIds.map((id, i) => ({ id, contract: contracts[i] })));
-    };
-    fn();
-  }, [nftList, nftListHasLoaded]);
+  const { nftList, hasLoaded: nftListHasLoaded, accounts } = useNFT();
 
   return (
     <Stack spacing="4">
@@ -72,7 +51,7 @@ const ACMAccountList = ({ onClick }: ACMAccountListProps) => {
 };
 
 const AaveV3 = () => {
-  const [selectedAccount, setSelectedAccount] = useState<Account>();
+  const [selectedAccount, setSelectedAccount] = useState<AcmAccountType>();
   const [isSetupACModalOpen, setIsSetupACModalOpen] = useState<boolean>(false);
 
   return (
@@ -98,7 +77,7 @@ const AaveV3 = () => {
           ) : (
             <>
               <ACMAccountList
-                onClick={(account: Account) => {
+                onClick={(account: AcmAccountType) => {
                   setSelectedAccount(account);
                 }}
               />

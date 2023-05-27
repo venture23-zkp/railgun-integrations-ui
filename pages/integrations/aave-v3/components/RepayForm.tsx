@@ -27,7 +27,7 @@ import useRailgunTx from '@/hooks/useRailgunTx';
 import { VALID_AMOUNT_REGEX, ethAddress } from '@/utils/constants';
 import { getNetwork } from '@/utils/networks';
 import { isAmountParsable } from '@/utils/token';
-import { CONTRACT_ADDRESS as ACM_CONTRACT_ADDRESS } from '../contract/acm';
+import { CONTRACT_ADDRESS as ACM_CONTRACT_ADDRESS } from '@/contract/acm';
 import { Account } from './TxFrom';
 import { AaveV3RepayRecipe } from '../recipes/acm/AaveV3RepayRecipe';
 

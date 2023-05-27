@@ -27,7 +27,7 @@ import useRailgunTx from '@/hooks/useRailgunTx';
 import { VALID_AMOUNT_REGEX, ethAddress } from '@/utils/constants';
 import { getNetwork } from '@/utils/networks';
 import { isAmountParsable } from '@/utils/token';
-import { CONTRACT_ADDRESS as ACM_CONTRACT_ADDRESS } from '../contract/acm';
+import { CONTRACT_ADDRESS as ACM_CONTRACT_ADDRESS } from '@/contract/acm';
 import { AaveV3DepositRecipe } from '../recipes/acm/AaveV3DepositRecipe';
 import { Account } from './TxFrom';
 
@@ -52,6 +52,7 @@ const DepositForm = ({ id }: Account) => {
   });
   const { isOpen: isReviewOpen, onOpen: openReview, onClose: closeReview } = useDisclosure();
   const [selectedToken, setSelectedToken] = useState<TokenListContextItem>(tokenList[0]);
+  const [maxBalance, setMaxBalance] = useState();
   const [tokenAmount, setTokenAmount] = useState<string>('');
 
   const onSubmit = handleSubmit(async (values) => {
@@ -75,6 +76,7 @@ const DepositForm = ({ id }: Account) => {
           onSelect={(token) => {
             setValue('token', token.name);
             setSelectedToken(token);
+
           }}
           tokenFilter={{
             aaveSupported: true
@@ -164,7 +166,7 @@ const ReviewDepositTransactionModal = ({
   isOpen,
   onClose,
   amount,
-  id,
+  id, // railgun wallet id
   token,
   onSubmitClick,
 }: ReviewDepositTransactionModalProps) => {
@@ -182,6 +184,7 @@ const ReviewDepositTransactionModal = ({
     try {
       setError(undefined);
       console.log(id);
+      console.log("DECIMAL:::: ", tokenAmount);
       const depositRecipe = new AaveV3DepositRecipe(
         ACM_CONTRACT_ADDRESS,
         {
