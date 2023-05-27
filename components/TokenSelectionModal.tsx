@@ -12,7 +12,7 @@ import {
   ModalHeader,
   ModalOverlay,
 } from '@chakra-ui/modal';
-import { IconButton, useDisclosure } from '@chakra-ui/react';
+import { IconButton, useDisclosure, Tag } from '@chakra-ui/react';
 import { Spinner } from '@chakra-ui/spinner';
 import { Address } from 'abitype';
 import { BigNumber, FixedNumber, ethers } from 'ethers';
@@ -84,27 +84,40 @@ const TokenSelectionItem = ({ token, onClick, isBalanceLoading }: TokenSelection
         <Text fontSize="md">{token.name}</Text>
         <Text fontSize="xs">{token.symbol}</Text>
       </Flex>
-      <Flex direction="column" align="flex-end">
-        {isBalanceLoading ? (
-          <Spinner />
-        ) : (
-          <>
-            <Text fontSize="md">
-              {FixedNumber.from(
-                formatUnits(tokenBalance.toString() || '0', token?.decimals || 0).toString()
-              )
-                .round(4)
-                .toString() || 0}
-            </Text>
-            <Text fontSize="xs">
-              {FixedNumber.from(
-                formatUnits(privateBalance.toString() || '0', token?.decimals || 0).toString()
-              )
-                .round(4)
-                .toString() || 0}
-            </Text>
-          </>
-        )}
+      <Flex direction="row" align={"center"} justifyContent={'flex-end'} gap={'10px'}>
+        {
+          token.aaveSupported &&
+          <Tag
+            size={'sm'}
+            variant='solid'
+            colorScheme='green'
+            left="-40px"
+          >
+            Aave
+          </Tag>
+        }
+        <Flex direction="column" align="flex-end">
+          {isBalanceLoading ? (
+            <Spinner />
+          ) : (
+            <>
+              <Text fontSize="md">
+                {FixedNumber.from(
+                  formatUnits(tokenBalance.toString() || '0', token?.decimals || 0).toString()
+                )
+                  .round(4)
+                  .toString() || 0}
+              </Text>
+              <Text fontSize="xs">
+                {FixedNumber.from(
+                  formatUnits(privateBalance.toString() || '0', token?.decimals || 0).toString()
+                )
+                  .round(4)
+                  .toString() || 0}
+              </Text>
+            </>
+          )}
+        </Flex>
       </Flex>
     </Flex>
   );
