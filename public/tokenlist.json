@@ -8634,7 +8634,7 @@
       "address": "0x45AC379F019E48ca5dAC02E54F406F99F5088099",
       "name": "WBTC",
       "symbol": "WBTC",
-      "decimals": 18,
+      "decimals": 8,
       "logoURI": "https://assets.coingecko.com/coins/images/7598/thumb/wrapped_bitcoin_wbtc.png?1608803028",
       "aaveSupported": true
     },
@@ -8652,7 +8652,7 @@
       "address": "0x2E8D98fd126a32362F2Bd8aA427E59a1ec63F780",
       "name": "USDT",
       "symbol": "USDT",
-      "decimals": 18,
+      "decimals": 6,
       "logoURI": "https://assets.coingecko.com/coins/images/325/thumb/Tether.png?1608803028",
       "aaveSupported": true
     },
