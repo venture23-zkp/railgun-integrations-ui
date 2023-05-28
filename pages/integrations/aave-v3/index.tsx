@@ -1,13 +1,16 @@
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { AddIcon } from '@chakra-ui/icons';
-import { Box, Card, CardBody, Flex, Heading, IconButton, Stack, Text } from '@chakra-ui/react';
+import { Box, Card, CardBody, Flex, Heading, IconButton, Stack, Text, Image } from '@chakra-ui/react';
 import { useNFT } from '@/contexts/NFTContext';
 import { shortenAddress } from '@/utils/address';
 import SetupACModal from './SetupACModal';
 import { abi } from '@/abi-typechain/abi';
 import TxFrom from './components/TxFrom';
 import AcmAccountType from '@/types/AcmAccount';
+import { useAaveToken } from '@/contexts/AaveTokenContext';
+import { FixedNumber } from 'ethers';
+import { formatUnits } from 'ethers/lib/utils.js';
 
 type ACMAccountListProps = {
   // eslint-disable-next-line no-unused-vars
@@ -16,6 +19,24 @@ type ACMAccountListProps = {
 
 const ACMAccountList = ({ onClick }: ACMAccountListProps) => {
   const { nftList, hasLoaded: nftListHasLoaded, accounts } = useNFT();
+  const { acTokensWithBalances } = useAaveToken();
+
+  const sortedAcTokensWithBalances = useMemo(() => {
+    for (let addressTypeBalances of Object.values(acTokensWithBalances)) {
+      for (let balances of Object.values(addressTypeBalances)) {
+        balances.sort((a, b) => {
+          if (b.balance?.gt(a.balance || '0x')) {
+            return 1;
+          } else if (a.balance?.gt(b.balance || '0x')) {
+            return -1;
+          } else {
+            return 0;
+          }
+        });
+      }
+    }
+    return acTokensWithBalances;
+  }, [acTokensWithBalances])
 
   return (
     <Stack spacing="4">
@@ -32,6 +53,27 @@ const ACMAccountList = ({ onClick }: ACMAccountListProps) => {
             <Flex direction="column" w="100%" paddingLeft="1.5rem">
               <Text fontSize="md">{shortenAddress(contract)}</Text>
               <Text fontSize="xs">{id}</Text>
+              <Flex gap="10px" justify={"flex-end"} align={"center"} marginTop={"5px"}>
+                {
+                  sortedAcTokensWithBalances?.[id]?.atoken?.slice(0, 3)?.map(token => (
+                    <Flex gap="2px" justify={"center"} align={"center"}>
+                      <Image
+                        borderRadius='full'
+                        boxSize='20px'
+                        src={token.logoURI}
+                        alt={token.symbol}
+                      />
+                      <Text fontSize="md">
+                        {FixedNumber.from(
+                          formatUnits(token.balance?.toString() || '0', token?.decimals || 0).toString()
+                        )
+                          .round(8)
+                          .toString() || 0}
+                      </Text>
+                    </Flex>
+                  ))
+                }
+              </Flex>
             </Flex>
             {/* <Heading size='md'> {shortenAddress(nft.contractAddress)}</Heading>
             <Text>{nft.id}</Text> */}
@@ -64,8 +106,8 @@ const AaveV3 = () => {
           w="42rem"
           className="container"
           position={'relative'}
-          // maxHeight='32rem'
-          // overflow={'scroll'}
+        // maxHeight='32rem'
+        // overflow={'scroll'}
         >
           {selectedAccount ? (
             <TxFrom
