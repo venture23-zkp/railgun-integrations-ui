@@ -63,7 +63,7 @@ export const AaveTokenListProvider = ({
     shieldingFees: { [key: number]: BigNumber };
     unshieldingFees: { [key: number]: BigNumber };
 }) => {
-    const { tokenList: aaveTokenList } = useAaveTokenList();
+    const { aTokenList } = useAaveTokenList();
     const [acTokensWithBalances, setAddressTokensWithBalances] = useState<AccountTokenListContextItem>({});
     const { accounts } = useNFT();
 
@@ -76,7 +76,7 @@ export const AaveTokenListProvider = ({
             for (let account of accounts) {
                 const acAddr = account.contract;
                 const balanceOfContract: BigNumber[] = (await readContracts({
-                    contracts: aaveTokenList.map((token) => ({
+                    contracts: aTokenList.map((token) => ({
                         abi: ERC20_ABI,
                         address: token.address,
                         functionName: 'balanceOf',
@@ -86,7 +86,7 @@ export const AaveTokenListProvider = ({
 
                 accountBalances[account.id] = {
                     [EAaveToken.ATOKEN]: balanceOfContract.map((balance, index) => (
-                        { ...aaveTokenList[index], balance: balance }
+                        { ...aTokenList[index], balance: balance }
                     ))
                 }
             }
@@ -107,4 +107,4 @@ export const AaveTokenListProvider = ({
     );
 };
 
-export const useToken = () => useContext(AaveTokenContext);
+export const useAaveToken = () => useContext(AaveTokenContext);

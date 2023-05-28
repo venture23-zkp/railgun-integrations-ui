@@ -116,11 +116,7 @@ export const TokenListProvider = ({
     };
     fn();
   }, [chainId, wallet, data]);
-
-  useEffect(() => {
-    console.log("tokenListWithPrivateBalance:::: ", tokenListWithPrivateBalance)
-  }, [tokenListWithPrivateBalance])
-
+  
   return (
     <TokenContext.Provider
       value={{

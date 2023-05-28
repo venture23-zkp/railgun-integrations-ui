@@ -1,5 +1,5 @@
 import { useNetwork } from 'wagmi';
-import tokenListJson from '@/public/aaveTokenList.json';
+import aaveTokenListJson from '@/public/aaveTokenList.json';
 import { TOKEN_PRIORITY_SORT } from '@/utils/constants';
 
 export interface AaveTokenListItem {
@@ -13,9 +13,8 @@ export interface AaveTokenListItem {
 
 export const useAaveTokenList = () => {
     const { chain } = useNetwork();
-    const chainId = chain?.id || 1; // default to mainnet if no chain id
 
-    const tokenList = tokenListJson.tokens
+    const aTokenList = aaveTokenListJson.tokens
         .sort((a, b) => {
             // sorts most common tokens to the top of the tokenList
             for (const symbol of TOKEN_PRIORITY_SORT) {
@@ -25,5 +24,5 @@ export const useAaveTokenList = () => {
             return 0;
         });
 
-    return { tokenList };
+    return { aTokenList };
 };
