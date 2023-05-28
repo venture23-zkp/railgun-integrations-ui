@@ -34,8 +34,8 @@ import { AaveV3BorrowRecipe } from '../recipes/acm/AaveV3BorrowRecipe';
 type FormInput = {
   borrowAmount: string;
   borrowToken: string;
-  collateralAmount: string;
-  collateralToken: string;
+  // collateralAmount: string;
+  // collateralToken: string;
 };
 
 const BorrowForm = ({ id }: Account) => {
@@ -125,7 +125,7 @@ const BorrowForm = ({ id }: Account) => {
           {errors.borrowAmount && errors.borrowAmount.message}
         </FormErrorMessage>
       </FormControl>
-      <FormControl isInvalid={Boolean(errors.collateralToken?.message)} mt=".5rem">
+      {/* <FormControl isInvalid={Boolean(errors.collateralToken?.message)} mt=".5rem">
         <FormLabel>Collateral Token Select</FormLabel>
         <TokenInput
           {...register('collateralToken')}
@@ -178,7 +178,7 @@ const BorrowForm = ({ id }: Account) => {
         <FormErrorMessage my=".25rem">
           {errors.collateralAmount && errors.collateralAmount.message}
         </FormErrorMessage>
-      </FormControl>
+      </FormControl> */}
       <Button
         isDisabled={!isConnected || chain?.unsupported}
         type="submit"
