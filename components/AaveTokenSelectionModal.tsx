@@ -29,6 +29,7 @@ import { TokenListItem } from '@/hooks/useTokenList';
 import { CUSTOM_TOKENS_STORAGE_KEY, ipfsDomain, rebaseTokens } from '@/utils/constants';
 import { parseIPFSUri } from '@/utils/ipfs';
 import { getNetwork } from '@/utils/networks';
+import { useNFT } from '@/contexts/NFTContext';
 
 type TokenSelectionModalProps = {
   isOpen: boolean;
@@ -242,7 +243,7 @@ const CustomTokenSelectionItem = ({ onSelect, tokenAddress }: CustomTokenSelecti
 };
 
 const TokenSelectionModal = (props: TokenSelectionModalProps) => {
-  const { tokenList } = useToken();
+  const { accounts } = useNFT();
   const [searchTerm, setSearchTerm] = useState('');
   const { isLoading: isBalanceLoading, refreshBalances } = useToken();
   const options = {

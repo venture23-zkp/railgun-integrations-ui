@@ -177,8 +177,6 @@ const ReviewWithdrawTransactionModal = ({
   const doSubmit = useCallback(async () => {
     if (!token.address || !token.decimals) throw new Error('bad form');
     try {
-      setError(undefined);
-      console.log(id);
       const withdrawRecipe = new AaveV3WithdrawRecipe(
         ACM_CONTRACT_ADDRESS,
         {

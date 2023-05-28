@@ -14,6 +14,7 @@ import { TokenListProvider } from '@/contexts/TokenContext';
 import { useRailgunProvider } from '@/hooks/useRailgunProvider';
 import '@/styles/globals.css';
 import { chains, provider, webSocketProvider } from '@/utils/networks';
+import { AaveTokenListProvider } from '@/contexts/AaveTokenContext';
 
 const APP_TITLE = 'Railgun Integration UI';
 
@@ -70,27 +71,29 @@ function MyApp({ Component, pageProps }: AppProps) {
               <RailgunWalletProvider>
                 <TokenListProvider shieldingFees={shieldingFees} unshieldingFees={unshieldingFees}>
                   <NFTListProvider>
-                    <Grid
-                      templateAreas={`". header ."
+                    <AaveTokenListProvider>
+                      <Grid
+                        templateAreas={`". header ."
                                   ". body ."
 									                ". footer ."
 										`}
-                      gridTemplateRows={'4.8rem 1fr 4.8rem'}
-                      gridTemplateColumns={'1fr minmax(auto, 150rem) 1fr'}
-                      gap="1"
-                      h="100vh"
-                      marginX="1rem"
-                    >
-                      <GridItem area={'header'}>
-                        <Header />
-                      </GridItem>
-                      <GridItem area={'body'}>
-                        <Component {...pageProps} />
-                      </GridItem>
-                      <GridItem area={'footer'}>
-                        <Footer />
-                      </GridItem>
-                    </Grid>
+                        gridTemplateRows={'4.8rem 1fr 4.8rem'}
+                        gridTemplateColumns={'1fr minmax(auto, 150rem) 1fr'}
+                        gap="1"
+                        h="100vh"
+                        marginX="1rem"
+                      >
+                        <GridItem area={'header'}>
+                          <Header />
+                        </GridItem>
+                        <GridItem area={'body'}>
+                          <Component {...pageProps} />
+                        </GridItem>
+                        <GridItem area={'footer'}>
+                          <Footer />
+                        </GridItem>
+                      </Grid>
+                    </AaveTokenListProvider>
                   </NFTListProvider>
                 </TokenListProvider>
               </RailgunWalletProvider>

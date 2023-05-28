@@ -1,11 +1,6 @@
-import { BigNumber } from "ethers";
-
 type AcmAccount = {
     id: string;
-    contract: string;
-    balances: {
-        [address: string]: BigNumber
-    }
+    contract: string
 };
 
 export default AcmAccount
