@@ -2,28 +2,36 @@ import React, { ReactNode, createContext, useContext, useEffect, useMemo, useSta
 import { Balances, TokenType } from '@railgun-community/engine';
 import { parseRailgunTokenAddress } from '@railgun-community/quickstart';
 import { ChainType } from '@railgun-community/shared-models';
-import { useNetwork } from 'wagmi';
+import { useNetwork, useBalance } from 'wagmi';
 import { NFTListItem, useNFTList } from '@/hooks/useNFTList';
 import { useRailgunWallet } from './RailgunWalletContext';
-import { useToken } from '@/contexts/TokenContext';
+import { useAaveTokenList } from '@/hooks/useAaveTokenList';
 import { CONTRACT_ADDRESS as ACM_CONTRACT_ADDRESS } from '@/contract/acm';
 import { readContracts } from 'wagmi';
 import { abi } from '@/abi-typechain/abi';
 import AcmAccountType from '@/types/AcmAccount';
+import { BigNumber } from 'ethers';
 
 const ERC20_ABI = [
   {
-    "name": "balanceOf",
-    "outputs": [
+    constant: true,
+    inputs: [
       {
-        "name": "balance",
-        "type": "uint256"
-      }
+        name: '_owner',
+        type: 'address',
+      },
     ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  }
+    name: 'balanceOf',
+    outputs: [
+      {
+        name: 'balance',
+        type: 'uint256',
+      },
+    ],
+    payable: false,
+    stateMutability: 'view',
+    type: 'function',
+  },
 ];
 
 function getNFTBalances(balances: Balances, nftAddresses?: string[]) {
@@ -84,11 +92,7 @@ export const NFTListProvider = ({ children }: { children: ReactNode }) => {
   const [hasLoaded, setHasLoaded] = useState(false);
   const [nftListWithBalance, setNFTListWithBalance] = useState<NFTListContextItem[]>([]);
   const [accounts, setAccounts] = useState<AcmAccountType[]>([]);
-  const { tokenList } = useToken();
-
-  const aaveSupportedTokens = useMemo(() => {
-    return tokenList.filter((token) => token.aaveSupported);
-  }, [tokenList])
+  const { tokenList: aaveTokenList } = useAaveTokenList();
 
   useEffect(() => {
     setHasLoaded(false);
@@ -122,7 +126,6 @@ export const NFTListProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (!hasLoaded) return;
     const fn = async () => {
-      console.log(nftListWithBalance)
       const acm = nftListWithBalance.find(({ address }) => address === ACM_CONTRACT_ADDRESS);
       if (!acm) return;
       const accountIds = acm.privateSubIds;
@@ -135,19 +138,29 @@ export const NFTListProvider = ({ children }: { children: ReactNode }) => {
         })),
       })) as string[];
 
-      // // getting balances for ac addresses
-      // for (let acAddr of contracts) {
-      //   const balanceOfContract = (await readContracts({
-      //     contracts: aaveSupportedTokens.map((token) => ({
-      //       abi: ERC20_ABI,
-      //       address: token.address,
-      //       functionName: 'balanceOf',
-      //       args: [acAddr],
-      //     })),
-      //   })) as string[];
-      // }
+      const contractBalance: {
+        [accountId: string]: {
+          [tokenSymobol: string]: BigNumber
+        }
+      } = {};
+      // getting balances for ac addresses
+      for (let acAddr of contracts) {
+        const balanceOfContract: BigNumber[] = (await readContracts({
+          contracts: aaveTokenList.map((token) => ({
+            abi: ERC20_ABI,
+            address: token.address,
+            functionName: 'balanceOf',
+            args: [acAddr],
+          })),
+        })) as BigNumber[];
 
-      setAccounts(accountIds.map((id, i) => ({ id, contract: contracts[i] })));
+        contractBalance[acAddr] = {};
+        balanceOfContract.forEach((balance, idx) => {
+          contractBalance[acAddr][aaveTokenList[idx].address] = balance
+        })
+      }
+
+      setAccounts(accountIds.map((id, i) => ({ id, contract: contracts[i], balances: contractBalance[contracts[i]] })));
     };
     fn();
   }, [nftListWithBalance, hasLoaded]);
