@@ -259,12 +259,12 @@ const ReviewBorrowTransactionModal = ({
           },
         ],
         erc20Amounts: [
-          {
-            isBaseToken: false,
-            tokenAddress: token.address,
-            amount: tokenAmount,
-            decimals: token.decimals,
-          },
+          // {
+          //   isBaseToken: false,
+          //   tokenAddress: token.address,
+          //   amount: tokenAmount,
+          //   decimals: token.decimals,
+          // },
         ],
       });
       txNotify(tx.hash);
