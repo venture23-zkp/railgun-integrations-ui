@@ -244,7 +244,7 @@ const ReviewBorrowTransactionModal = ({
           id: BigNumber.from(id),
           tokenAddress: token.address,
           amount: tokenAmount,
-          rateMode: BigNumber.from(0)
+          rateMode: BigNumber.from(2)
         },
         token.decimals
       );
