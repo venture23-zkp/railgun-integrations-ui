@@ -48,10 +48,10 @@ export type AccountTokenListContextItem = {
 }
 
 export type AaveTokenContextType = {
-    addressTokensWithBalances: AccountTokenListContextItem;
+    acTokensWithBalances: AccountTokenListContextItem;
 };
 const initialContext = {
-    addressTokensWithBalances: {}
+    acTokensWithBalances: {}
 };
 
 const AaveTokenContext = createContext<AaveTokenContextType>(initialContext);
@@ -64,7 +64,7 @@ export const AaveTokenListProvider = ({
     unshieldingFees: { [key: number]: BigNumber };
 }) => {
     const { tokenList: aaveTokenList } = useAaveTokenList();
-    const [addressTokensWithBalances, setAddressTokensWithBalances] = useState<AccountTokenListContextItem>({});
+    const [acTokensWithBalances, setAddressTokensWithBalances] = useState<AccountTokenListContextItem>({});
     const { accounts } = useNFT();
 
     // Getting ac addresses and their balances
@@ -99,7 +99,7 @@ export const AaveTokenListProvider = ({
     return (
         <AaveTokenContext.Provider
             value={{
-                addressTokensWithBalances: addressTokensWithBalances || [],
+                acTokensWithBalances: acTokensWithBalances || [],
             }}
         >
             {children}
