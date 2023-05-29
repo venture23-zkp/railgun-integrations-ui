@@ -104,8 +104,8 @@ export const useRailgunProvider = () => {
       const unshieldingFeesFromNetwork = {
         [chainId]: BigNumber.from(feesSerialized?.unshield || fallbackUnshieldingFees[chainId]),
       };
-      setShieldingFees(shieldingFeesFromNetwork);
-      setunshieldingFees(unshieldingFeesFromNetwork);
+      setShieldingFees({ ...shieldingFees, ...shieldingFeesFromNetwork });
+      setunshieldingFees({ ...unshieldingFees, ...unshieldingFeesFromNetwork });
 
       await new Promise((resolve) => {
         const intervalId = setInterval(() => {
