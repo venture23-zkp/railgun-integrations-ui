@@ -53,6 +53,19 @@ type CustomTokenSelectionItemProps = {
     tokenAddress: Address;
 };
 
+const compactDisplayableBalance = (tokenBalance: BigNumber) => {
+    return Intl.NumberFormat('en-US', {
+        notation: "compact",
+        maximumFractionDigits: 1
+    }).format(
+        FixedNumber.from(
+            tokenBalance.toString()
+        )
+            .round(4)
+            .toString() || 0
+    )
+}
+
 const TokenSelectionItem = ({ token, onClick, isBalanceLoading }: TokenSelectionItemProps) => {
     const tokenBalance = token?.balance || BigNumber.from(0);
     const aTokenBalance = token?.aTokenBalance || BigNumber.from(0);
@@ -104,11 +117,9 @@ const TokenSelectionItem = ({ token, onClick, isBalanceLoading }: TokenSelection
                                 >
                                     <TagLabel>
                                         P&nbsp;
-                                        {FixedNumber.from(
-                                            formatUnits(tokenBalance.toString() || '0', token?.decimals || 0).toString()
-                                        )
-                                            .round(4)
-                                            .toString() || 0}
+                                        {
+                                            compactDisplayableBalance(tokenBalance)
+                                        }
                                     </TagLabel>
                                 </Tag>
                             </Flex>
@@ -121,11 +132,7 @@ const TokenSelectionItem = ({ token, onClick, isBalanceLoading }: TokenSelection
                                 >
                                     <TagLabel>
                                         A&nbsp;
-                                        {FixedNumber.from(
-                                            formatUnits(aTokenBalance.toString() || '0', token?.decimals || 0).toString()
-                                        )
-                                            .round(4)
-                                            .toString() || 0}
+                                        {compactDisplayableBalance(aTokenBalance)}
                                     </TagLabel>
                                 </Tag>
                             </Flex>
@@ -138,11 +145,7 @@ const TokenSelectionItem = ({ token, onClick, isBalanceLoading }: TokenSelection
                                 >
                                     <TagLabel>
                                         DV&nbsp;
-                                        {FixedNumber.from(
-                                            formatUnits(dVriableBalance.toString() || '0', token?.decimals || 0).toString()
-                                        )
-                                            .round(4)
-                                            .toString() || 0}
+                                        {compactDisplayableBalance(dVriableBalance)}
                                     </TagLabel>
                                 </Tag>
                             </Flex>
@@ -155,11 +158,7 @@ const TokenSelectionItem = ({ token, onClick, isBalanceLoading }: TokenSelection
                                 >
                                     <TagLabel>
                                         DS&nbsp;
-                                        {FixedNumber.from(
-                                            formatUnits(dStableBalance.toString() || '0', token?.decimals || 0).toString()
-                                        )
-                                            .round(4)
-                                            .toString() || 0}
+                                        {compactDisplayableBalance(dStableBalance)}
                                     </TagLabel>
                                 </Tag>
                             </Flex>
