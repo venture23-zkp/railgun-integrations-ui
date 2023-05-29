@@ -34,8 +34,8 @@ import { AaveV3RepayRecipe } from '../recipes/acm/AaveV3RepayRecipe';
 type FormInput = {
   repayAmount: string;
   repayToken: string;
-  collateralAmount: string;
-  collateralToken: string;
+  // collateralAmount: string;
+  // collateralToken: string;
 };
 
 const RepayForm = ({ id }: Account) => {
@@ -125,7 +125,7 @@ const RepayForm = ({ id }: Account) => {
           {errors.repayAmount && errors.repayAmount.message}
         </FormErrorMessage>
       </FormControl>
-      <FormControl isInvalid={Boolean(errors.collateralToken?.message)} mt=".5rem">
+      {/* <FormControl isInvalid={Boolean(errors.collateralToken?.message)} mt=".5rem">
         <FormLabel>Collateral Token Select</FormLabel>
         <TokenInput
           {...register('collateralToken')}
@@ -178,7 +178,7 @@ const RepayForm = ({ id }: Account) => {
         <FormErrorMessage my=".25rem">
           {errors.collateralAmount && errors.collateralAmount.message}
         </FormErrorMessage>
-      </FormControl>
+      </FormControl> */}
       <Button
         isDisabled={!isConnected || chain?.unsupported}
         type="submit"
@@ -244,7 +244,7 @@ const ReviewRepayTransactionModal = ({
           id: BigNumber.from(id),
           tokenAddress: token.address,
           amount: tokenAmount,
-          rateMode: BigNumber.from(0)
+          rateMode: BigNumber.from(2)
         },
         token.decimals
       );

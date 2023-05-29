@@ -9,6 +9,7 @@ export interface AaveTokenListItem {
     decimals: number;
     name: string;
     logoURI: string;
+    originalTokenAddress: string;
 }
 
 export const useAaveTokenList = () => {

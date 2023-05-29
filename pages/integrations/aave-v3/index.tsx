@@ -18,7 +18,7 @@ type ACMAccountListProps = {
 };
 
 const ACMAccountList = ({ onClick }: ACMAccountListProps) => {
-  const { nftList, hasLoaded: nftListHasLoaded, accounts } = useNFT();
+  const { accounts } = useNFT();
   const { acTokensWithBalances } = useAaveToken();
 
   const sortedAcTokensWithBalances = useMemo(() => {
@@ -95,6 +95,7 @@ const ACMAccountList = ({ onClick }: ACMAccountListProps) => {
 const AaveV3 = () => {
   const [selectedAccount, setSelectedAccount] = useState<AcmAccountType>();
   const [isSetupACModalOpen, setIsSetupACModalOpen] = useState<boolean>(false);
+  const { setSelectedAccount: setSelectedAccountInContext } = useNFT();
 
   return (
     <Flex direction="column" align="center" justify="center">
@@ -113,6 +114,7 @@ const AaveV3 = () => {
             <TxFrom
               account={selectedAccount}
               handleBackClick={() => {
+                setSelectedAccountInContext(undefined);
                 setSelectedAccount(undefined);
               }}
             />
@@ -120,6 +122,7 @@ const AaveV3 = () => {
             <>
               <ACMAccountList
                 onClick={(account: AcmAccountType) => {
+                  setSelectedAccountInContext(account);
                   setSelectedAccount(account);
                 }}
               />

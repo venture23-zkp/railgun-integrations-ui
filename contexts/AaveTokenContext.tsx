@@ -32,7 +32,7 @@ const ERC20_ABI = [
     },
 ];
 
-type AaveTokenListContextItem = AaveTokenListItem & {
+export type AaveTokenListContextItem = AaveTokenListItem & {
     balance: BigNumber | null;
 }
 

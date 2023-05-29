@@ -50,13 +50,17 @@ export type NFTListContextItem = NFTListItem & {
 export type NFTContextType = {
   hasLoaded: boolean;
   nftList: NFTListContextItem[];
-  accounts: AcmAccountType[]
+  accounts: AcmAccountType[];
+  selectedAccount?: AcmAccountType;
+  setSelectedAccount: (newAccount: AcmAccountType) => void;
 };
 
 const initialContext: NFTContextType = {
   hasLoaded: false,
   nftList: [],
-  accounts: []
+  accounts: [],
+  selectedAccount: undefined,
+  setSelectedAccount: () => { }
 };
 
 const NFTContext = createContext<NFTContextType>(initialContext);
@@ -69,11 +73,8 @@ export const NFTListProvider = ({ children }: { children: ReactNode }) => {
   const [hasLoaded, setHasLoaded] = useState(false);
   const [nftListWithBalance, setNFTListWithBalance] = useState<NFTListContextItem[]>([]);
   const [accounts, setAccounts] = useState<AcmAccountType[]>([]);
+  const [selectedAccount, setSelectedAccount] = useState<AcmAccountType>();
   const { tokenList } = useToken();
-
-  const aaveSupportedTokens = useMemo(() => {
-    return tokenList.filter((token) => token.aaveSupported);
-  }, [tokenList])
 
   useEffect(() => {
     setHasLoaded(false);
@@ -130,7 +131,9 @@ export const NFTListProvider = ({ children }: { children: ReactNode }) => {
       value={{
         hasLoaded,
         nftList: nftListWithBalance || [],
-        accounts
+        accounts,
+        selectedAccount,
+        setSelectedAccount
       }}
     >
       {children}
