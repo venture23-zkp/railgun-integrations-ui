@@ -13,7 +13,7 @@ import {
   ModalHeader,
   ModalOverlay,
 } from '@chakra-ui/modal';
-import { useDisclosure } from '@chakra-ui/react';
+import { Select, useDisclosure } from '@chakra-ui/react';
 import { Alert, AlertIcon } from '@chakra-ui/react';
 import { NFTTokenType } from '@railgun-community/shared-models';
 import { BigNumber, ethers } from 'ethers';
@@ -30,6 +30,7 @@ import { isAmountParsable } from '@/utils/token';
 import { CONTRACT_ADDRESS as ACM_CONTRACT_ADDRESS } from '@/contract/acm';
 import { Account } from './TxFrom';
 import { AaveV3RepayRecipe } from '../recipes/acm/AaveV3RepayRecipe';
+import EInterestMode from '@/types/EInterestMode';
 
 type FormInput = {
   repayAmount: string;
@@ -55,6 +56,7 @@ const RepayForm = ({ id }: Account) => {
   const { isOpen: isReviewOpen, onOpen: openReview, onClose: closeReview } = useDisclosure();
   const [selectedToken, setSelectedToken] = useState<TokenListContextItem>(tokenList[0]);
   const [tokenAmount, setTokenAmount] = useState<string>('');
+  const [interestMode, setInterestMode] = useState<EInterestMode>(EInterestMode.VARIABLE);
 
   // eslint-disable-next-line no-unused-vars
   const onSubmit = handleSubmit(async (values) => {
@@ -81,7 +83,7 @@ const RepayForm = ({ id }: Account) => {
           }}
         />
       </FormControl>
-      <FormControl isInvalid={Boolean(errors.repayAmount?.message)}>
+      <FormControl isInvalid={Boolean(errors.repayAmount?.message)} marginBottom={"0.75rem"}>
         <FormLabel>Repay Amount</FormLabel>
         <InputGroup size="lg" width="auto" height="4rem">
           <Input
@@ -125,60 +127,19 @@ const RepayForm = ({ id }: Account) => {
           {errors.repayAmount && errors.repayAmount.message}
         </FormErrorMessage>
       </FormControl>
-      {/* <FormControl isInvalid={Boolean(errors.collateralToken?.message)} mt=".5rem">
-        <FormLabel>Collateral Token Select</FormLabel>
-        <TokenInput
-          {...register('collateralToken')}
-          onSelect={(token) => {
-            setValue('collateralToken', token.name);
-            setSelectedToken(token);
-          }}
-        />
-      </FormControl>
-      <FormControl isInvalid={Boolean(errors.collateralAmount?.message)}>
-        <FormLabel>Collateral Amount</FormLabel>
+      <FormControl>
+        <FormLabel>Interest Mode</FormLabel>
         <InputGroup size="lg" width="auto" height="4rem">
-          <Input
-            variant="outline"
-            size="lg"
-            pr="4.5rem"
-            height="100%"
-            placeholder="0.1"
-            {...register('collateralAmount', {
-              required: 'This is required',
-              onChange: (e) => {
-                const isParseable = isAmountParsable(e.target.value, selectedToken.decimals);
-                if (
-                  e.target.value &&
-                  !isNaN(e.target.value) &&
-                  VALID_AMOUNT_REGEX.test(e.target.value) &&
-                  isParseable
-                ) {
-                  setTokenAmount(e.target.value);
-                }
-              },
-              validate: (value) => {
-                try {
-                  if (!VALID_AMOUNT_REGEX.test(value) && isNaN(parseFloat(value))) {
-                    return 'Not a valid number';
-                  }
-
-                  return (
-                    Boolean(
-                      parseUnits(value || '0', selectedToken?.decimals).gt(BigNumber.from('0'))
-                    ) || 'Amount must be greater than 0'
-                  );
-                } catch (e) {
-                  return 'Not a valid number';
-                }
-              },
-            })}
-          />
+          <Select
+            isRequired={true}
+            onChange={(e) => { setInterestMode(e.target.value as EInterestMode) }}
+            value={interestMode}
+          >
+            <option value={EInterestMode.STABLE}>Stable</option>
+            <option value={EInterestMode.VARIABLE}>Variable</option>
+          </Select>
         </InputGroup>
-        <FormErrorMessage my=".25rem">
-          {errors.collateralAmount && errors.collateralAmount.message}
-        </FormErrorMessage>
-      </FormControl> */}
+      </FormControl>
       <Button
         isDisabled={!isConnected || chain?.unsupported}
         type="submit"
@@ -201,6 +162,7 @@ const RepayForm = ({ id }: Account) => {
               amount: '',
             }));
           }}
+          interestMode={interestMode}
         />
       )}
     </form>
@@ -214,6 +176,7 @@ type ReviewRepayTransactionModalProps = {
   token: TokenListContextItem;
   amount: string;
   onSubmitClick: () => void;
+  interestMode: EInterestMode;
 };
 
 const ReviewRepayTransactionModal = ({
@@ -223,6 +186,7 @@ const ReviewRepayTransactionModal = ({
   id,
   token,
   onSubmitClick,
+  interestMode
 }: ReviewRepayTransactionModalProps) => {
   const { txNotify } = useNotifications();
   const { isExecuting, executeRecipe } = useRailgunTx();
@@ -244,7 +208,7 @@ const ReviewRepayTransactionModal = ({
           id: BigNumber.from(id),
           tokenAddress: token.address,
           amount: tokenAmount,
-          rateMode: BigNumber.from(2)
+          rateMode: BigNumber.from(interestMode)
         },
         token.decimals
       );
