@@ -19,7 +19,7 @@ import { NFTTokenType } from '@railgun-community/shared-models';
 import { BigNumber, ethers } from 'ethers';
 import { parseUnits } from 'ethers/lib/utils.js';
 import { useAccount, useNetwork } from 'wagmi';
-import TokenInput from '@/components/TokenInput';
+import ATokenInput from '@/components/ATokenInput';
 import { useToken } from '@/contexts/TokenContext';
 import { TokenListContextItem } from '@/contexts/TokenContext';
 import useNotifications from '@/hooks/useNotifications';
@@ -72,7 +72,7 @@ const BorrowForm = ({ id }: Account) => {
     <form onSubmit={onSubmit}>
       <FormControl isInvalid={Boolean(errors.borrowToken?.message)} mt=".5rem">
         <FormLabel>Borrow Token Select</FormLabel>
-        <TokenInput
+        <ATokenInput
           {...register('borrowToken')}
           exclude={[ethAddress]}
           onSelect={(token) => {

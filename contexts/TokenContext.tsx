@@ -18,6 +18,9 @@ import { useRailgunWallet } from './RailgunWalletContext';
 export type TokenListContextItem = TokenListItem & {
   balance: BigNumber | null;
   privateBalance: BigNumber | null;
+  aTokenBalance?: BigNumber | null;
+  dStableTokenBalance?: BigNumber | null;
+  dVariableTokenBalance?: BigNumber | null;
 };
 
 export type TokenContextType = {
@@ -116,7 +119,7 @@ export const TokenListProvider = ({
     };
     fn();
   }, [chainId, wallet, data]);
-  
+
   return (
     <TokenContext.Provider
       value={{

@@ -8,7 +8,7 @@ import SetupACModal from './SetupACModal';
 import { abi } from '@/abi-typechain/abi';
 import TxFrom from './components/TxFrom';
 import AcmAccountType from '@/types/AcmAccount';
-import { useAaveToken } from '@/contexts/AaveTokenContext';
+import { EAaveToken, useAaveToken } from '@/contexts/AaveTokenContext';
 import { FixedNumber } from 'ethers';
 import { formatUnits } from 'ethers/lib/utils.js';
 
@@ -22,20 +22,24 @@ const ACMAccountList = ({ onClick }: ACMAccountListProps) => {
   const { acTokensWithBalances } = useAaveToken();
 
   const sortedAcTokensWithBalances = useMemo(() => {
-    for (let addressTypeBalances of Object.values(acTokensWithBalances)) {
-      for (let balances of Object.values(addressTypeBalances)) {
-        balances.sort((a, b) => {
-          if (b.balance?.gt(a.balance || '0x')) {
-            return 1;
-          } else if (a.balance?.gt(b.balance || '0x')) {
-            return -1;
-          } else {
-            return 0;
-          }
-        });
-      }
+    const sortedAcTokens: any = {};
+    for (let acAddr of Object.keys(acTokensWithBalances)) {
+      const acAddrTokenTypeObj = acTokensWithBalances[acAddr];
+      const accrTokenType = EAaveToken.A_TOKEN;
+      const originalToAaveTokenObj = acAddrTokenTypeObj[accrTokenType as EAaveToken];
+      const tokensArr = Object.values(originalToAaveTokenObj as any);
+      tokensArr.sort((a, b) => {
+        if (b.balance?.gt(a.balance || '0x')) {
+          return 1;
+        } else if (a.balance?.gt(b.balance || '0x')) {
+          return -1;
+        } else {
+          return 0;
+        }
+      });
+      sortedAcTokens[acAddr] = tokensArr
     }
-    return acTokensWithBalances;
+    return sortedAcTokens;
   }, [acTokensWithBalances])
 
   return (
@@ -47,15 +51,13 @@ const ACMAccountList = ({ onClick }: ACMAccountListProps) => {
           cursor={'pointer'}
           onClick={() => onClick({ id, contract })}
         >
-          {/* <CardHeader>
-          </CardHeader> */}
           <CardBody>
             <Flex direction="column" w="100%" paddingLeft="1.5rem">
               <Text fontSize="md">{shortenAddress(contract)}</Text>
               <Text fontSize="xs">{id}</Text>
               <Flex gap="10px" justify={"flex-end"} align={"center"} marginTop={"5px"}>
                 {
-                  sortedAcTokensWithBalances?.[id]?.atoken?.slice(0, 3)?.map(token => (
+                  sortedAcTokensWithBalances?.[id]?.slice(0, 3)?.map(token => (
                     <Flex gap="2px" justify={"center"} align={"center"}>
                       <Image
                         borderRadius='full'

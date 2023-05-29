@@ -21,7 +21,7 @@ import { parseUnits } from 'ethers/lib/utils.js';
 import { useAccount, useNetwork } from 'wagmi';
 import ATokenInput from '@/components/ATokenInput';
 import { useToken } from '@/contexts/TokenContext';
-import { AaveTokenListContextItem, useAaveToken, EAaveToken } from '@/contexts/AaveTokenContext';
+import { TokenListContextItem } from '@/contexts/TokenContext';
 import useNotifications from '@/hooks/useNotifications';
 import useRailgunTx from '@/hooks/useRailgunTx';
 import { VALID_AMOUNT_REGEX, ethAddress } from '@/utils/constants';
@@ -29,15 +29,15 @@ import { getNetwork } from '@/utils/networks';
 import { isAmountParsable } from '@/utils/token';
 import { CONTRACT_ADDRESS as ACM_CONTRACT_ADDRESS } from '@/contract/acm';
 import { AaveV3WithdrawRecipe } from '../recipes/acm/AaveV3WithdrawRecipe';
-import AcmAccount from '@/types/AcmAccount';
+import { Account } from './TxFrom';
 
 type FormInput = {
   token: string;
   amount: string;
 };
 
-const WithdrawForm = ({ account }: { account: AcmAccount }) => {
-  const { acTokensWithBalances: accountTokens } = useAaveToken();
+const WithdrawForm = ({ id }: Account) => {
+  const { tokenList } = useToken();
   const { chain } = useNetwork();
   const { isConnected } = useAccount();
   const {
@@ -50,14 +50,8 @@ const WithdrawForm = ({ account }: { account: AcmAccount }) => {
     mode: 'onChange',
     // defaultValues: {},
   });
-
-  const tokenList: AaveTokenListContextItem[] = useMemo(() => {
-    const selectedAccountId = account?.id || "";
-    return (accountTokens[selectedAccountId]?.[EAaveToken.ATOKEN] || []);
-  }, [accountTokens, account])
-
   const { isOpen: isReviewOpen, onOpen: openReview, onClose: closeReview } = useDisclosure();
-  const [selectedToken, setSelectedToken] = useState<AaveTokenListContextItem>(tokenList[0]);
+  const [selectedToken, setSelectedToken] = useState<TokenListContextItem>(tokenList[0]);
   const [tokenAmount, setTokenAmount] = useState<string>('');
 
   const onSubmit = handleSubmit(async (values) => {
@@ -139,7 +133,7 @@ const WithdrawForm = ({ account }: { account: AcmAccount }) => {
         <ReviewWithdrawTransactionModal
           isOpen={isReviewOpen}
           onClose={closeReview}
-          id={account.id}
+          id={id}
           token={selectedToken}
           amount={tokenAmount}
           onSubmitClick={() => {
@@ -158,7 +152,7 @@ type ReviewWithdrawTransactionModalProps = {
   isOpen: boolean;
   onClose: () => void;
   id: string;
-  token: AaveTokenListContextItem;
+  token: TokenListContextItem;
   amount: string;
   onSubmitClick: () => void;
 };
@@ -177,24 +171,20 @@ const ReviewWithdrawTransactionModal = ({
   const { chain } = useNetwork();
   const chainId = useMemo(() => chain?.id || 1, [chain]);
   const network = useMemo(() => getNetwork(chainId), [chainId]);
-  const { tokenList: originalTokenList } = useToken();
 
   const tokenAmount = parseUnits(amount! || '0', token.decimals);
 
   const doSubmit = useCallback(async () => {
-    // Since the incoming token in aave token, we need to map it to its original token and send that
-    const originalToken = originalTokenList.find(oToken => oToken.address === token.originalTokenAddress);
-
-    if (!originalToken?.address || !originalToken?.decimals) throw new Error('bad form');
+    if (!token.address || !token.decimals) throw new Error('bad form');
     try {
       const withdrawRecipe = new AaveV3WithdrawRecipe(
         ACM_CONTRACT_ADDRESS,
         {
           id: BigNumber.from(id),
-          tokenAddress: originalToken.address,
+          tokenAddress: token.address,
           amount: tokenAmount,
         },
-        originalToken.decimals
+        token.decimals
       );
       const tx = await executeRecipe(withdrawRecipe, {
         networkName: network.railgunNetworkName,
@@ -209,9 +199,9 @@ const ReviewWithdrawTransactionModal = ({
         erc20Amounts: [
           // {
           //   isBaseToken: false,
-          //   tokenAddress: originalToken.address,
+          //   tokenAddress: token.address,
           //   amount: tokenAmount,
-          //   decimals: originalToken.decimals,
+          //   decimals: token.decimals,
           // },
         ],
       });

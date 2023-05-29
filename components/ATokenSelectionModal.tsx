@@ -3,7 +3,7 @@ import { RepeatIcon, SearchIcon } from '@chakra-ui/icons';
 import { ExternalLinkIcon } from '@chakra-ui/icons';
 import { Image } from '@chakra-ui/image';
 import { Input, InputGroup, InputLeftElement } from '@chakra-ui/input';
-import { Circle, Flex, Link, Text } from '@chakra-ui/layout';
+import { Circle, Flex, Link, Text, Grid } from '@chakra-ui/layout';
 import {
     Modal,
     ModalBody,
@@ -12,7 +12,7 @@ import {
     ModalHeader,
     ModalOverlay,
 } from '@chakra-ui/modal';
-import { IconButton, useDisclosure, Tag } from '@chakra-ui/react';
+import { IconButton, Tag, TagLabel, useDisclosure } from '@chakra-ui/react';
 import { Spinner } from '@chakra-ui/spinner';
 import { Address } from 'abitype';
 import { BigNumber, FixedNumber, ethers } from 'ethers';
@@ -21,7 +21,7 @@ import Fuse from 'fuse.js';
 import localforage from 'localforage';
 import { useAccount, useBalance, useNetwork, useToken as useWagmiToken } from 'wagmi';
 import WarningModal from '@/components/WarningModal';
-import { useToken } from '@/contexts/TokenContext';
+import { TokenListContextItem, useToken } from '@/contexts/TokenContext';
 import useLocalForageSet from '@/hooks/useLocalForageSet';
 import useNotifications from '@/hooks/useNotifications';
 import { TokenListItem } from '@/hooks/useTokenList';
@@ -29,31 +29,35 @@ import { CUSTOM_TOKENS_STORAGE_KEY, ipfsDomain, rebaseTokens } from '@/utils/con
 import { parseIPFSUri } from '@/utils/ipfs';
 import { getNetwork } from '@/utils/networks';
 import TokenFilterType from '@/types/TokenFilterType';
-import { useAaveToken, EAaveToken, AaveTokenListContextItem } from '@/contexts/AaveTokenContext';
+import { useAaveToken, EAaveToken } from '@/contexts/AaveTokenContext';
 import { useNFT } from '@/contexts/NFTContext';
+import { token } from '@railgun-community/engine/dist/typechain-types/contracts';
 
 type TokenSelectionModalProps = {
     isOpen: boolean;
     onClose: () => void;
-    onSelect: (arg0: AaveTokenListContextItem) => void; // eslint-disable-line no-unused-vars
+    onSelect: (arg0: TokenListContextItem) => void; // eslint-disable-line no-unused-vars
     exclude?: string[];
     tokenFilter?: TokenFilterType
 };
 
 type TokenSelectionItemProps = {
-    token: AaveTokenListContextItem;
-    onClick: (arg0: AaveTokenListContextItem) => void; // eslint-disable-line no-unused-vars
+    token: TokenListContextItem;
+    onClick: (arg0: TokenListContextItem) => void; // eslint-disable-line no-unused-vars
     isBalanceLoading?: boolean;
 };
 
 type CustomTokenSelectionItemProps = {
-    onSelect: (arg0: AaveTokenListContextItem) => void; // eslint-disable-line no-unused-vars
+    onSelect: (arg0: TokenListContextItem) => void; // eslint-disable-line no-unused-vars
     key: number;
     tokenAddress: Address;
 };
 
 const TokenSelectionItem = ({ token, onClick, isBalanceLoading }: TokenSelectionItemProps) => {
     const tokenBalance = token?.balance || BigNumber.from(0);
+    const aTokenBalance = token?.aTokenBalance || BigNumber.from(0);
+    const dVriableBalance = token?.dVariableTokenBalance || BigNumber.from(0);
+    const dStableBalance = token?.dStableTokenBalance || BigNumber.from(0);
     // const privateBalance = token?.privateBalance || BigNumber.from(0);
     return (
         <Flex
@@ -67,7 +71,7 @@ const TokenSelectionItem = ({ token, onClick, isBalanceLoading }: TokenSelection
         >
             <Flex direction="column" justify="center" w="2rem">
                 <Image
-                    boxSize="1.55rem"
+                    width="1.55rem"
                     src={
                         token.logoURI.slice(0, 4) == 'ipfs'
                             ? `${ipfsDomain}${parseIPFSUri(token.logoURI)}`
@@ -86,41 +90,84 @@ const TokenSelectionItem = ({ token, onClick, isBalanceLoading }: TokenSelection
                 <Text fontSize="xs">{token.symbol}</Text>
             </Flex>
             <Flex direction="row" align={"center"} justifyContent={'flex-end'} gap={'10px'}>
-                {
-                    token.aaveSupported &&
-                    <Tag
-                        size={'sm'}
-                        variant='solid'
-                        colorScheme='green'
-                        left="-40px"
-                    >
-                        Aave
-                    </Tag>
-                }
                 <Flex direction="column" align="flex-end">
                     {isBalanceLoading ? (
                         <Spinner />
                     ) : (
-                        <>
-                            <Text fontSize="md">
-                                {FixedNumber.from(
-                                    formatUnits(tokenBalance.toString() || '0', token?.decimals || 0).toString()
-                                )
-                                    .round(4)
-                                    .toString() || 0}
-                            </Text>
-                            {/* <Text fontSize="xs">
-                                {FixedNumber.from(
-                                    formatUnits(privateBalance.toString() || '0', token?.decimals || 0).toString()
-                                )
-                                    .round(4)
-                                    .toString() || 0}
-                            </Text> */}
-                        </>
+                        <Grid templateColumns="repeat(2, 1fr)" gap={4}>
+                            <Flex>
+                                <Tag
+                                    size={'sm'}
+                                    borderRadius='full'
+                                    variant='solid'
+                                    colorScheme='green'
+                                >
+                                    <TagLabel>
+                                        P&nbsp;
+                                        {FixedNumber.from(
+                                            formatUnits(tokenBalance.toString() || '0', token?.decimals || 0).toString()
+                                        )
+                                            .round(4)
+                                            .toString() || 0}
+                                    </TagLabel>
+                                </Tag>
+                            </Flex>
+                            <Flex>
+                                <Tag
+                                    size={'sm'}
+                                    borderRadius='full'
+                                    variant='solid'
+                                    colorScheme='blue'
+                                >
+                                    <TagLabel>
+                                        A&nbsp;
+                                        {FixedNumber.from(
+                                            formatUnits(aTokenBalance.toString() || '0', token?.decimals || 0).toString()
+                                        )
+                                            .round(4)
+                                            .toString() || 0}
+                                    </TagLabel>
+                                </Tag>
+                            </Flex>
+                            <Flex>
+                                <Tag
+                                    size={'sm'}
+                                    borderRadius='full'
+                                    variant='solid'
+                                    colorScheme='orange'
+                                >
+                                    <TagLabel>
+                                        DV&nbsp;
+                                        {FixedNumber.from(
+                                            formatUnits(dVriableBalance.toString() || '0', token?.decimals || 0).toString()
+                                        )
+                                            .round(4)
+                                            .toString() || 0}
+                                    </TagLabel>
+                                </Tag>
+                            </Flex>
+                            <Flex>
+                                <Tag
+                                    size={'sm'}
+                                    borderRadius='full'
+                                    variant='solid'
+                                    colorScheme='red'
+                                >
+                                    <TagLabel>
+                                        DS&nbsp;
+                                        {FixedNumber.from(
+                                            formatUnits(dStableBalance.toString() || '0', token?.decimals || 0).toString()
+                                        )
+                                            .round(4)
+                                            .toString() || 0}
+                                    </TagLabel>
+                                </Tag>
+                            </Flex>
+                        </Grid>
                     )}
                 </Flex>
-            </Flex>
-        </Flex>
+            </Flex >
+        </Flex >
     );
 };
 
@@ -259,6 +306,7 @@ const CustomTokenSelectionItem = ({ onSelect, tokenAddress }: CustomTokenSelecti
 
 const TokenSelectionModal = (props: TokenSelectionModalProps) => {
     const { acTokensWithBalances } = useAaveToken();
+    const { tokenList: originalTokenList } = useToken();
     const [searchTerm, setSearchTerm] = useState('');
     const { isLoading: isBalanceLoading, refreshBalances } = useToken();
     const options = {
@@ -268,15 +316,21 @@ const TokenSelectionModal = (props: TokenSelectionModalProps) => {
     };
     const { selectedAccount } = useNFT();
 
-    const tokenList: AaveTokenListContextItem[] = useMemo(() => {
-        const selectedAccountId = selectedAccount?.id || "";
-        return (acTokensWithBalances[selectedAccountId]?.[EAaveToken.ATOKEN] || []);
-    }, [acTokensWithBalances])
+    const tokenList: TokenListContextItem[] = useMemo(() => {
+        const selectedAccountId = selectedAccount?.id || '';
+        return originalTokenList.filter(token => token.aaveSupported === true).map(token => {
+            const accountBalance = acTokensWithBalances[selectedAccountId];
+            token.aTokenBalance = accountBalance?.[EAaveToken.A_TOKEN]?.[token.address]?.balance;
+            token.dStableTokenBalance = accountBalance?.[EAaveToken.D_STABLE_TOKEN]?.[token.address]?.balance;
+            token.dVariableTokenBalance = accountBalance?.[EAaveToken.D_VARIABLE_TOKEN]?.[token.address]?.balance;
+            return token;
+        })
+    }, [originalTokenList, acTokensWithBalances])
 
     const fuse = new Fuse(tokenList, options);
 
     const results = fuse.search(searchTerm);
-    let allResults = [] as AaveTokenListContextItem[];
+    let allResults = [] as TokenListContextItem[];
     if (searchTerm === '') {
         allResults = tokenList.slice(0, 5);
     } else {

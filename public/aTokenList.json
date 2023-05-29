@@ -6,7 +6,7 @@
     "minor": 0,
     "patch": 0
   },
-  "description": "A combination of uniswap lab's token list version 7 and pancakeswap's token list version 2.16.13. It also contains tokens supported by aave.",
+  "description": "A-Token list",
   "tokens": [
     {
       "chainId": 5,

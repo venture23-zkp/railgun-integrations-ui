@@ -53,7 +53,7 @@ const TxFrom = ({
             <DepositForm {...account} />
           </TabPanel>
           <TabPanel>
-            <WithdrawForm account={account} />
+            <WithdrawForm {...account} />
           </TabPanel>
           <TabPanel>
             <BorrowForm {...account} />

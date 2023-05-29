@@ -4,12 +4,13 @@ import { ChevronDownIcon } from '@chakra-ui/icons';
 import { Input, InputGroup, InputRightElement } from '@chakra-ui/input';
 import { useDisclosure } from '@chakra-ui/react';
 import ATokenSelectionModal from '@/components/ATokenSelectionModal';
-import { AaveTokenListContextItem } from '@/contexts/AaveTokenContext';
+import { TokenListContextItem } from '@/contexts/AaveTokenContext';
 import TokenFilterType from '@/types/TokenFilterType';
+import { TokenListContextItem } from '@/contexts/TokenContext';
 
 type ATokenInputProps = {
     exclude?: string[];
-    onSelect: (token: AaveTokenListContextItem) => void; // eslint-disable-line no-unused-vars
+    onSelect: (token: TokenListContextItem) => void; // eslint-disable-line no-unused-vars
     tokenFilter?: TokenFilterType
 } & UseFormRegisterReturn;
 
@@ -20,7 +21,7 @@ const ATokenInput = React.forwardRef(
             onOpen: onTokenSelectionOpen,
             onClose: onTokenSelectionClose,
         } = useDisclosure();
-        const localOnSelect = (token: AaveTokenListContextItem) => {
+        const localOnSelect = (token: TokenListContextItem) => {
             onSelect(token);
             onTokenSelectionClose();
         };

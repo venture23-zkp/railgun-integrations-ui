@@ -1,0 +1,92 @@
+{
+    "name": "Railgun Integrations UI",
+    "timestamp": "2023-01-18T14:45:36.473Z",
+    "version": {
+        "major": 1,
+        "minor": 0,
+        "patch": 0
+    },
+    "description": "D-Variable-Token list",
+    "tokens": [
+        {
+            "chainId": 5,
+            "address": "0x1ef9ae399F3C4738677A9BfC5d561765392dd333",
+            "name": "AAVE",
+            "symbol": "AAVE",
+            "decimals": 18,
+            "logoURI": "https://assets.coingecko.com/coins/images/12645/thumb/AAVE.png?1608803028",
+            "aaveSupported": true,
+            "originalTokenAddress": "0x8153A21dFeB1F67024aA6C6e611432900FF3dcb9"
+        },
+        {
+            "chainId": 5,
+            "address": "0xEAEc6590FDA7981b7DE06Bae7C1De27cFc262818",
+            "name": "DAI",
+            "symbol": "DAI",
+            "decimals": 18,
+            "logoURI": "https://assets.coingecko.com/coins/images/9956/thumb/4943.png?1608803028",
+            "aaveSupported": true,
+            "originalTokenAddress": "0xBa8DCeD3512925e52FE67b1b5329187589072A55"
+        },
+        {
+            "chainId": 5,
+            "address": "0x76a79F46329a8EB7d7d1c50F45a4090707588864",
+            "name": "LINK",
+            "symbol": "LINK",
+            "decimals": 18,
+            "logoURI": "https://assets.coingecko.com/coins/images/6450/thumb/linklogo.png?1608803028",
+            "aaveSupported": true,
+            "originalTokenAddress": "0xe9c4393a23246293a8D31BF7ab68c17d4CF90A29"
+        },
+        {
+            "chainId": 5,
+            "address": "0x4DAe67e69aCed5ca8f99018246e6476F82eBF9ab",
+            "name": "USDC",
+            "symbol": "USDC",
+            "decimals": 6,
+            "logoURI": "https://assets.coingecko.com/coins/images/6319/thumb/USD_Coin_icon.png?1608803028",
+            "aaveSupported": true,
+            "originalTokenAddress": "0x65aFADD39029741B3b8f0756952C74678c9cEC93"
+        },
+        {
+            "chainId": 5,
+            "address": "0xB2353aB4dcbEBa08EB7Ea0F098E90aEC41008BB5",
+            "name": "WBTC",
+            "symbol": "WBTC",
+            "decimals": 8,
+            "logoURI": "https://assets.coingecko.com/coins/images/7598/thumb/wrapped_bitcoin_wbtc.png?1608803028",
+            "aaveSupported": true,
+            "originalTokenAddress": "0x45AC379F019E48ca5dAC02E54F406F99F5088099"
+        },
+        {
+            "chainId": 5,
+            "address": "0x166C9CbE2E31Ae3C26cE4C18278BF5dbED82484C",
+            "name": "EURS",
+            "symbol": "EURS",
+            "decimals": 2,
+            "logoURI": "https://assets.coingecko.com/coins/images/5164/thumb/EURS_300x300.png?1608803028",
+            "aaveSupported": true,
+            "originalTokenAddress": "0xBC33cfbD55EA6e5B97C6da26F11160ae82216E2b"
+        },
+        {
+            "chainId": 5,
+            "address": "0xF2C9Aa2B0Fc747fC0327B335541FD34D180f8A30",
+            "name": "USDT",
+            "symbol": "USDT",
+            "decimals": 6,
+            "logoURI": "https://assets.coingecko.com/coins/images/325/thumb/Tether.png?1608803028",
+            "aaveSupported": true,
+            "originalTokenAddress": "0x2E8D98fd126a32362F2Bd8aA427E59a1ec63F780"
+        },
+        {
+            "chainId": 5,
+            "address": "0xff3284Be0C687C21cCB18a8e61a27AeC72C520bc",
+            "name": "WETH",
+            "symbol": "WETH",
+            "decimals": 18,
+            "logoURI": "https://assets.coingecko.com/coins/images/2518/thumb/weth.png?1608803028",
+            "aaveSupported": true,
+            "originalTokenAddress": "0xCCB14936C2E000ED8393A571D15A2672537838Ad"
+        }
+    ]
+}
