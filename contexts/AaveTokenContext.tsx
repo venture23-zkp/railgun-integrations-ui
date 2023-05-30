@@ -3,7 +3,8 @@ import React, {
     createContext,
     useEffect,
     useContext,
-    useState
+    useState,
+    useCallback
 } from 'react';
 import { BigNumber } from 'ethers';
 import { useNetwork, readContracts } from 'wagmi';
@@ -55,9 +56,13 @@ export type AccountTokenListContextItem = {
 
 export type AaveTokenContextType = {
     acTokensWithBalances: AccountTokenListContextItem;
+    refetchBalance: () => {},
+    isBalanceLoading: boolean
 };
 const initialContext = {
-    acTokensWithBalances: {}
+    acTokensWithBalances: {},
+    refetchBalance: () => { },
+    isBalanceLoading: false
 };
 
 const AaveTokenContext = createContext<AaveTokenContextType>(initialContext);
@@ -71,81 +76,88 @@ export const AaveTokenListProvider = ({
 }) => {
     const { aTokenList, dVariableToken, dStableToken } = useAaveTokenList();
     const [acTokensWithBalances, setAddressTokensWithBalances] = useState<AccountTokenListContextItem>({});
+    // const [shouldRefreshBalance, st] = useState(false);
     const { accounts } = useNFT();
+    const [isBalanceLoading, setIsBalanceLoading] = useState<boolean>(false);
+
+    const refetchBalance = useCallback(async () => {
+        setIsBalanceLoading(true);
+        const accountBalances: AccountTokenListContextItem = {};
+
+        for (let account of accounts) {
+            const acAddr = account.contract;
+            accountBalances[account.id] = {};
+            const accountSpecificBalances: any = {};
+
+            // getting aToken Balance
+            const aBalanceOfContract: BigNumber[] = (await readContracts({
+                contracts: aTokenList.map((token) => ({
+                    abi: ERC20_ABI,
+                    address: token.address,
+                    functionName: 'balanceOf',
+                    args: [acAddr],
+                })),
+            })) as BigNumber[];
+
+            const aTokenBalances: any = {};
+            aBalanceOfContract.forEach((balance, index) => (
+                aTokenBalances[aTokenList[index].originalTokenAddress] =
+                { ...aTokenList[index], balance: balance }
+            ))
+            accountSpecificBalances[EAaveToken.A_TOKEN] = aTokenBalances;
+
+            // getting dVariableToken Balance
+            const dVariableBalanceOfContract: BigNumber[] = (await readContracts({
+                contracts: dVariableToken.map((token) => ({
+                    abi: ERC20_ABI,
+                    address: token.address,
+                    functionName: 'balanceOf',
+                    args: [acAddr],
+                })),
+            })) as BigNumber[];
+
+            const dVariableTokenBalances: any = {};
+            dVariableBalanceOfContract.forEach((balance, index) => (
+                dVariableTokenBalances[dVariableToken[index].originalTokenAddress] =
+                { ...dVariableToken[index], balance: balance }
+            ))
+            accountSpecificBalances[EAaveToken.D_VARIABLE_TOKEN] = dVariableTokenBalances;
+
+            // getting dStableToken Balance
+            const dStableBalanceOfContract: BigNumber[] = (await readContracts({
+                contracts: dStableToken.map((token) => ({
+                    abi: ERC20_ABI,
+                    address: token.address,
+                    functionName: 'balanceOf',
+                    args: [acAddr],
+                })),
+            })) as BigNumber[];
+
+            const dStableTokenBalances: any = {};
+            dStableBalanceOfContract.forEach((balance, index) => (
+                dStableTokenBalances[dStableToken[index].originalTokenAddress] =
+                { ...dStableToken[index], balance: balance }
+            ))
+            accountSpecificBalances[EAaveToken.D_STABLE_TOKEN] = dStableTokenBalances;
+
+            accountBalances[account.id] = accountSpecificBalances;
+        }
+
+        setAddressTokensWithBalances(accountBalances);
+        setIsBalanceLoading(false);
+    }, [accounts])
 
     // Getting ac addresses and their balances
     useEffect(() => {
-        const fn = async () => {
-            const accountBalances: AccountTokenListContextItem = {};
-
-            for (let account of accounts) {
-                const acAddr = account.contract;
-                accountBalances[account.id] = {};
-                const accountSpecificBalances: any = {};
-
-                // getting aToken Balance
-                const aBalanceOfContract: BigNumber[] = (await readContracts({
-                    contracts: aTokenList.map((token) => ({
-                        abi: ERC20_ABI,
-                        address: token.address,
-                        functionName: 'balanceOf',
-                        args: [acAddr],
-                    })),
-                })) as BigNumber[];
-
-                const aTokenBalances: any = {};
-                aBalanceOfContract.forEach((balance, index) => (
-                    aTokenBalances[aTokenList[index].originalTokenAddress] =
-                    { ...aTokenList[index], balance: balance }
-                ))
-                accountSpecificBalances[EAaveToken.A_TOKEN] = aTokenBalances;
-
-                // getting dVariableToken Balance
-                const dVariableBalanceOfContract: BigNumber[] = (await readContracts({
-                    contracts: dVariableToken.map((token) => ({
-                        abi: ERC20_ABI,
-                        address: token.address,
-                        functionName: 'balanceOf',
-                        args: [acAddr],
-                    })),
-                })) as BigNumber[];
-
-                const dVariableTokenBalances: any = {};
-                dVariableBalanceOfContract.forEach((balance, index) => (
-                    dVariableTokenBalances[dVariableToken[index].originalTokenAddress] =
-                    { ...dVariableToken[index], balance: balance }
-                ))
-                accountSpecificBalances[EAaveToken.D_VARIABLE_TOKEN] = dVariableTokenBalances;
-
-                // getting dStableToken Balance
-                const dStableBalanceOfContract: BigNumber[] = (await readContracts({
-                    contracts: dStableToken.map((token) => ({
-                        abi: ERC20_ABI,
-                        address: token.address,
-                        functionName: 'balanceOf',
-                        args: [acAddr],
-                    })),
-                })) as BigNumber[];
-
-                const dStableTokenBalances: any = {};
-                dStableBalanceOfContract.forEach((balance, index) => (
-                    dStableTokenBalances[dStableToken[index].originalTokenAddress] =
-                    { ...dStableToken[index], balance: balance }
-                ))
-                accountSpecificBalances[EAaveToken.D_STABLE_TOKEN] = dStableTokenBalances;
-
-                accountBalances[account.id] = accountSpecificBalances;
-            }
-
-            setAddressTokensWithBalances(accountBalances);
-        };
-        fn();
-    }, [accounts]);
+        refetchBalance();
+    }, [accounts])
 
     return (
         <AaveTokenContext.Provider
             value={{
                 acTokensWithBalances: acTokensWithBalances || [],
+                refetchBalance,
+                isBalanceLoading
             }}
         >
             {children}

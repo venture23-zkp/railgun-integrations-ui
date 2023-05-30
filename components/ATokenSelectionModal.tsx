@@ -304,7 +304,7 @@ const CustomTokenSelectionItem = ({ onSelect, tokenAddress }: CustomTokenSelecti
 };
 
 const TokenSelectionModal = (props: TokenSelectionModalProps) => {
-    const { acTokensWithBalances } = useAaveToken();
+    const { acTokensWithBalances, refetchBalance: refetchAaveBalance, isBalanceLoading: isAaaveBalanceLoading } = useAaveToken();
     const { tokenList: originalTokenList } = useToken();
     const [searchTerm, setSearchTerm] = useState('');
     const { isLoading: isBalanceLoading, refreshBalances } = useToken();
@@ -376,7 +376,7 @@ const TokenSelectionModal = (props: TokenSelectionModalProps) => {
                             aria-label="Refresh acount balances"
                             icon={<RepeatIcon />}
                             onClick={() => {
-                                if (!isBalanceLoading) refreshBalances();
+                                if (!isAaaveBalanceLoading) refetchAaveBalance();
                             }}
                         />
                     </Flex>
