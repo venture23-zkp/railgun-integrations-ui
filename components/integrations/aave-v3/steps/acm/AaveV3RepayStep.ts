@@ -35,16 +35,19 @@ export class AaveV3RepayStep extends Step {
   protected async getStepOutput(input: StepInput): Promise<UnvalidatedStepOutput> {
     const { id, tokenAddress, amount, rateMode } = this.data;
     const contract = new ACM(this.acm);
-    const spendToken: RecipeERC20AmountRecipient = {
-      amount: amount,
+
+    const amountAfterFee = amount.sub(amount.mul(25).div(10000));
+    const spentToken: RecipeERC20AmountRecipient = {
+      amount: amountAfterFee,
       decimals: this.decimals,
       tokenAddress: tokenAddress,
       recipient: this.acm,
     };
-    const populatedTransaction = await contract.createRepay(id, tokenAddress, amount, rateMode);
+
+    const populatedTransaction = await contract.createRepay(id, tokenAddress, amountAfterFee, rateMode);
     return {
       populatedTransactions: [populatedTransaction],
-      spentERC20Amounts: [spendToken],
+      spentERC20Amounts: [spentToken],
       outputERC20Amounts: [],
       spentNFTs: [],
       outputNFTs: input.nfts,

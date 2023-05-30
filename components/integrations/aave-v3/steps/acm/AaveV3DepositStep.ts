@@ -43,7 +43,7 @@ export class AaveV3DepositStep extends Step {
       recipient: this.acm,
     };
 
-    const populatedTransaction = await contract.createDeposit(id, tokenAddress, amount);
+    const populatedTransaction = await contract.createDeposit(id, tokenAddress, amountAfterFee);
     return {
       populatedTransactions: [populatedTransaction],
       spentERC20Amounts: [spentToken],
