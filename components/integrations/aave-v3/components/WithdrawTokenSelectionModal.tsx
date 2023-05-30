@@ -104,21 +104,11 @@ const TokenSelectionItem = ({ token, onClick, isBalanceLoading }: TokenSelection
                     {isBalanceLoading ? (
                         <Spinner />
                     ) : (
-                        <Grid templateColumns="repeat(2, 1fr)" gap={4}>
-                            <Flex>
-                                <Tag
-                                    size={'sm'}
-                                    borderRadius='full'
-                                    variant='solid'
-                                    colorScheme='blue'
-                                >
-                                    <TagLabel>
-                                        A&nbsp;
-                                        {compactDisplayableBalance(aTokenBalance, tokenDecimal)}
-                                    </TagLabel>
-                                </Tag>
-                            </Flex>
-                        </Grid>
+                        <>
+                            <Text fontSize="md">
+                                {compactDisplayableBalance(aTokenBalance, tokenDecimal)}
+                            </Text>
+                        </>
                     )}
                 </Flex>
             </Flex >

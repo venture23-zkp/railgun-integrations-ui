@@ -19,7 +19,7 @@ import { NFTTokenType } from '@railgun-community/shared-models';
 import { BigNumber, ethers } from 'ethers';
 import { parseUnits } from 'ethers/lib/utils.js';
 import { useAccount, useNetwork } from 'wagmi';
-import ATokenInput from '@/components/ATokenInput';
+import ATokenInput from './DepositTokenInput';
 import { useToken } from '@/contexts/TokenContext';
 import { TokenListContextItem } from '@/contexts/TokenContext';
 import useNotifications from '@/hooks/useNotifications';
