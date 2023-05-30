@@ -19,7 +19,7 @@ import { NFTTokenType } from '@railgun-community/shared-models';
 import { BigNumber, ethers } from 'ethers';
 import { parseUnits } from 'ethers/lib/utils.js';
 import { useAccount, useNetwork } from 'wagmi';
-import ATokenInput from '@/components/ATokenInput';
+import RepayTokenInput from './RepayTokenInput';
 import { useToken } from '@/contexts/TokenContext';
 import { TokenListContextItem } from '@/contexts/TokenContext';
 import useNotifications from '@/hooks/useNotifications';
@@ -74,7 +74,7 @@ const RepayForm = ({ id }: Account) => {
     <form onSubmit={onSubmit}>
       <FormControl isInvalid={Boolean(errors.repayToken?.message)} mt=".5rem">
         <FormLabel>Repay Token Select</FormLabel>
-        <ATokenInput
+        <RepayTokenInput
           {...register('repayToken')}
           exclude={[ethAddress]}
           onSelect={(token) => {

@@ -67,12 +67,8 @@ const compactDisplayableBalance = (tokenBalance: BigNumber, tokenDecimal: any) =
 }
 
 const TokenSelectionItem = ({ token, onClick, isBalanceLoading }: TokenSelectionItemProps) => {
-    const tokenDecimal = token?.decimals || 18;
-    const tokenBalance = token?.balance || BigNumber.from(0);
     const aTokenBalance = token?.aTokenBalance || BigNumber.from(0);
-    const dVriableBalance = token?.dVariableTokenBalance || BigNumber.from(0);
-    const dStableBalance = token?.dStableTokenBalance || BigNumber.from(0);
-    // const privateBalance = token?.privateBalance || BigNumber.from(0);
+    const privateBalance = token?.privateBalance || BigNumber.from(0);
     return (
         <Flex
             justify="space-between"
@@ -108,62 +104,22 @@ const TokenSelectionItem = ({ token, onClick, isBalanceLoading }: TokenSelection
                     {isBalanceLoading ? (
                         <Spinner />
                     ) : (
-                        <Grid templateColumns="repeat(2, 1fr)" gap={4}>
-                            <Flex>
-                                <Tag
-                                    size={'sm'}
-                                    borderRadius='full'
-                                    variant='solid'
-                                    colorScheme='green'
-                                >
-                                    <TagLabel>
-                                        P&nbsp;
-                                        {
-                                            compactDisplayableBalance(tokenBalance, tokenDecimal)
-                                        }
-                                    </TagLabel>
-                                </Tag>
-                            </Flex>
-                            <Flex>
-                                <Tag
-                                    size={'sm'}
-                                    borderRadius='full'
-                                    variant='solid'
-                                    colorScheme='blue'
-                                >
-                                    <TagLabel>
-                                        A&nbsp;
-                                        {compactDisplayableBalance(aTokenBalance, tokenDecimal)}
-                                    </TagLabel>
-                                </Tag>
-                            </Flex>
-                            <Flex>
-                                <Tag
-                                    size={'sm'}
-                                    borderRadius='full'
-                                    variant='solid'
-                                    colorScheme='orange'
-                                >
-                                    <TagLabel>
-                                        DV&nbsp;
-                                        {compactDisplayableBalance(dVriableBalance, tokenDecimal)}
-                                    </TagLabel>
-                                </Tag>
-                            </Flex>
-                            <Flex>
-                                <Tag
-                                    size={'sm'}
-                                    borderRadius='full'
-                                    variant='solid'
-                                    colorScheme='red'
-                                >
-                                    <TagLabel>
-                                        DS&nbsp;
-                                        {compactDisplayableBalance(dStableBalance, tokenDecimal)}
-                                    </TagLabel>
-                                </Tag>
-                            </Flex>
-                        </Grid>
+                        <>
+                            <Text fontSize="md">
+                                {FixedNumber.from(
+                                    formatUnits(aTokenBalance.toString() || '0', token?.decimals || 0).toString()
+                                )
+                                    .round(4)
+                                    .toString() || 0}
+                            </Text>
+                            <Text fontSize="xs">
+                                {FixedNumber.from(
+                                    formatUnits(privateBalance.toString() || '0', token?.decimals || 0).toString()
+                                )
+                                    .round(4)
+                                    .toString() || 0}
+                            </Text>
+                        </>
                     )}
                 </Flex>
             </Flex >
@@ -308,7 +264,7 @@ const TokenSelectionModal = (props: TokenSelectionModalProps) => {
     const { acTokensWithBalances, refetchBalance: refetchAaveBalance, isBalanceLoading: isAaaveBalanceLoading } = useAaveToken();
     const { tokenList: originalTokenList } = useToken();
     const [searchTerm, setSearchTerm] = useState('');
-    const { isLoading: isBalanceLoading } = useToken();
+    const { isLoading: isBalanceLoading, refreshBalances } = useToken();
     const options = {
         includeScore: true,
         keys: ['address', 'name', 'symbol'],
@@ -400,6 +356,7 @@ const TokenSelectionModal = (props: TokenSelectionModalProps) => {
                                             props.onSelect(token);
                                             setSearchTerm('');
                                         }}
+                                        isBalanceLoading={isAaaveBalanceLoading}
                                     />
                                 );
                             })

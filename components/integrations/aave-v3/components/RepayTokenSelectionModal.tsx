@@ -67,12 +67,9 @@ const compactDisplayableBalance = (tokenBalance: BigNumber, tokenDecimal: any) =
 }
 
 const TokenSelectionItem = ({ token, onClick, isBalanceLoading }: TokenSelectionItemProps) => {
-    const tokenDecimal = token?.decimals || 18;
-    const tokenBalance = token?.balance || BigNumber.from(0);
-    const aTokenBalance = token?.aTokenBalance || BigNumber.from(0);
     const dVriableBalance = token?.dVariableTokenBalance || BigNumber.from(0);
     const dStableBalance = token?.dStableTokenBalance || BigNumber.from(0);
-    // const privateBalance = token?.privateBalance || BigNumber.from(0);
+    const tokenDecimal = token?.decimals || 18;
     return (
         <Flex
             justify="space-between"
@@ -109,34 +106,6 @@ const TokenSelectionItem = ({ token, onClick, isBalanceLoading }: TokenSelection
                         <Spinner />
                     ) : (
                         <Grid templateColumns="repeat(2, 1fr)" gap={4}>
-                            <Flex>
-                                <Tag
-                                    size={'sm'}
-                                    borderRadius='full'
-                                    variant='solid'
-                                    colorScheme='green'
-                                >
-                                    <TagLabel>
-                                        P&nbsp;
-                                        {
-                                            compactDisplayableBalance(tokenBalance, tokenDecimal)
-                                        }
-                                    </TagLabel>
-                                </Tag>
-                            </Flex>
-                            <Flex>
-                                <Tag
-                                    size={'sm'}
-                                    borderRadius='full'
-                                    variant='solid'
-                                    colorScheme='blue'
-                                >
-                                    <TagLabel>
-                                        A&nbsp;
-                                        {compactDisplayableBalance(aTokenBalance, tokenDecimal)}
-                                    </TagLabel>
-                                </Tag>
-                            </Flex>
                             <Flex>
                                 <Tag
                                     size={'sm'}
@@ -400,6 +369,7 @@ const TokenSelectionModal = (props: TokenSelectionModalProps) => {
                                             props.onSelect(token);
                                             setSearchTerm('');
                                         }}
+                                        isBalanceLoading={isAaaveBalanceLoading}
                                     />
                                 );
                             })
