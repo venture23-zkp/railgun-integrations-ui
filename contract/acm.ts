@@ -1,6 +1,6 @@
 import { Contract, PopulatedTransaction } from '@ethersproject/contracts';
 import { abi } from '@/abi-typechain/abi';
-import { validateAddress } from '../pages/integrations/aave-v3/utils/address';
+import { validateAddress } from '@/components/integrations/aave-v3/utils/address';
 import { BigNumber } from '@ethersproject/bignumber';
 import { BaseProvider } from '@ethersproject/providers';
 import { AddressContractManager } from '../abi-typechain/acm/ACM';
@@ -45,7 +45,7 @@ export class ACM {
     token: string,
     amount: BigNumber
   ): Promise<PopulatedTransaction> {
-    return this.contract.populateTransaction.withdraw(id,token,amount);
+    return this.contract.populateTransaction.withdraw(id, token, amount);
   }
 
   createBorrow(
@@ -54,7 +54,7 @@ export class ACM {
     amount: BigNumber,
     rateMode: BigNumber
   ): Promise<PopulatedTransaction> {
-    return this.contract.populateTransaction.borrow(id,token,amount,rateMode);
+    return this.contract.populateTransaction.borrow(id, token, amount, rateMode);
   }
 
   createRepay(
@@ -63,6 +63,6 @@ export class ACM {
     amount: BigNumber,
     rateMode: BigNumber
   ): Promise<PopulatedTransaction> {
-    return this.contract.populateTransaction.repay(id,token,amount,rateMode);
+    return this.contract.populateTransaction.repay(id, token, amount, rateMode);
   }
 }
