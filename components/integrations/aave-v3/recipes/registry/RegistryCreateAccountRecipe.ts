@@ -3,7 +3,7 @@ import { Step } from '@railgun-community/cookbook';
 import { NetworkName } from '@railgun-community/shared-models';
 import { BigNumber } from 'ethers';
 import { isAddress } from 'ethers/lib/utils.js';
-import { RegistryCreateAccountStep, RegistryCreateAccountData} from '../../steps/registry/RegistryCreateAccountStep';
+import { RegistryCreateAccountStep, RegistryCreateAccountData } from '../../steps/registry/RegistryCreateAccountStep';
 import { Address } from '../../utils/address';
 import { SNARK_SCALAR_FIELD } from '../../utils/big-number';
 

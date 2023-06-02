@@ -4,7 +4,7 @@ import { EVMGasType } from '@railgun-community/shared-models';
 import { FallbackProviderJsonConfig } from '@railgun-community/shared-models';
 import { BigNumber } from 'ethers';
 import { Chain, configureChains } from 'wagmi';
-import { arbitrum, bsc, goerli, mainnet, polygon } from 'wagmi/chains';
+import { arbitrum, bsc, goerli, mainnet, polygon, polygonMumbai } from 'wagmi/chains';
 import { publicProvider } from 'wagmi/providers/public';
 import { celoIcon, ethAddress } from '@/utils/constants';
 import { bscIcon } from '@/utils/constants';
@@ -46,6 +46,7 @@ export const { chains, provider, webSocketProvider } = configureChains(
     arbitrum,
     { ...bsc, iconUrl: bscIcon },
     polygon,
+    polygonMumbai,
     goerli,
     { ...celoAlfajores, iconUrl: celoIcon },
   ],
@@ -162,6 +163,22 @@ export const networks = {
     fallbackProviders: {
       chainId: celoAlfajores.id,
       providers: [{ provider: getRpcUrl(celoAlfajores.id), priority: 1, weight: 1 }],
+    },
+  },
+  [polygonMumbai.id]: {
+    blockExplorerUrl: 'https://mumbai.polygonscan.com/',
+    railgunNetworkName: NetworkName.PolygonMumbai,
+    chainId: polygonMumbai.id,
+    wethAddress: '0x9c3C9283D3e44854697Cd22D3Faa240Cfb032889',
+    evmGasType: EVMGasType.Type2,
+    baseToken: {
+      symbol: 'MATIC',
+      name: 'MATIC',
+      logoURI: '',
+    },
+    fallbackProviders: {
+      chainId: polygonMumbai.id,
+      providers: [{ provider: getRpcUrl(polygonMumbai.id), priority: 1, weight: 1 }],
     },
   },
 } as { [key: number]: NetworkConfig };

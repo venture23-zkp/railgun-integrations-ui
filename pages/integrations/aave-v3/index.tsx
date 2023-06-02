@@ -5,12 +5,15 @@ import { Box, Card, CardBody, Flex, Heading, IconButton, Stack, Text, Image } fr
 import { useNFT } from '@/contexts/NFTContext';
 import { shortenAddress } from '@/utils/address';
 import SetupACModal from '@/components/integrations/aave-v3/SetupACModal';
+import SetupRegistryAccount from '@/components/integrations/aave-v3/SetupRegistryAccount';
 import { abi } from '@/abi-typechain/abi';
 import TxFrom from '@/components/integrations/aave-v3/components/TxFrom';
 import AcmAccountType from '@/types/AcmAccount';
 import { EAaveToken, useAaveToken } from '@/contexts/AaveTokenContext';
 import { FixedNumber } from 'ethers';
 import { formatUnits } from 'ethers/lib/utils.js';
+import { useNetwork } from 'wagmi';
+import { networks } from '@/utils/networks.ts';
 
 type ACMAccountListProps = {
   // eslint-disable-next-line no-unused-vars
@@ -98,6 +101,8 @@ const AaveV3 = () => {
   const [selectedAccount, setSelectedAccount] = useState<AcmAccountType>();
   const [isSetupACModalOpen, setIsSetupACModalOpen] = useState<boolean>(false);
   const { setSelectedAccount: setSelectedAccountInContext } = useNFT();
+  const { chain } = useNetwork();
+  const chainId = chain?.id || 1;
 
   return (
     <Flex direction="column" align="center" justify="center">
@@ -142,12 +147,21 @@ const AaveV3 = () => {
           )}
         </Box>
       </Box>
-      <SetupACModal
-        isOpen={isSetupACModalOpen}
-        onClose={() => {
-          setIsSetupACModalOpen(false);
-        }}
-      />
+      {
+        chainId === 80001 ?
+          <SetupRegistryAccount
+            isOpen={isSetupACModalOpen}
+            onClose={() => {
+              setIsSetupACModalOpen(false);
+            }}
+          /> :
+          <SetupACModal
+            isOpen={isSetupACModalOpen}
+            onClose={() => {
+              setIsSetupACModalOpen(false);
+            }}
+          />
+      }
     </Flex>
   );
 };
