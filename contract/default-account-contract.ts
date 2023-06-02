@@ -28,7 +28,7 @@ export class DefaultAccount {
   createExecuteCall(
     to:string,
     value:BigNumber,
-    data:BytesLike
+    data:Bytes
 
   ): Promise<PopulatedTransaction> {
     return this.contract.populateTransaction.executeCall(to,value,data);
