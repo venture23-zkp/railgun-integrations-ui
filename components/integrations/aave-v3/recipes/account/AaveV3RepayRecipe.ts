@@ -9,10 +9,10 @@ import {
   import { Address } from '../../utils/address';
   import { AaveV3Recipe } from '../acm/AaveV3Recipe';
   
-  export class AaveV3DepositRecipe extends AaveV3Recipe {
+  export class AaveV3RepayRecipe extends AaveV3Recipe {
     readonly config = {
-      name: 'Aave V3 Deposit',
-      description: 'Deposits funds to Aave V3 via ACM',
+      name: 'Aave V3 Repay',
+      description: 'Repays borrowed funds to Aave V3 via ACM',
     };
   
 
