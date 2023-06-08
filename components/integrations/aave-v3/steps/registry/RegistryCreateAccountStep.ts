@@ -32,7 +32,7 @@ export class RegistryCreateAccountStep extends Step {
     protected async getStepOutput(input: StepInput): Promise<UnvalidatedStepOutput> {
         const contract = new ERC6551_Registry(this.registry, provider({ chainId: this.data.chainId?.toNumber() }));
         const { implementation, chainId, tokenContract, tokenId, salt, initData } = this.data;
-        let populatedTransaction = await contract.createAccount(implementation, chainId, tokenContract, tokenId, salt, initData);
+        let populatedTransaction = await contract.createCreateAccount(implementation, chainId, tokenContract, tokenId, salt, initData);
         return {
             populatedTransactions: [populatedTransaction],
             spentERC20Amounts: [],
