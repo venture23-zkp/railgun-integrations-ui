@@ -111,11 +111,10 @@ const TokenSelectionItem = ({ token, onClick, isBalanceLoading }: TokenSelection
                                     size={'sm'}
                                     borderRadius='full'
                                     variant='solid'
-                                    // colorScheme='whatsapp'
-                                    backgroundColor={'#b3cee5'}
+                                    colorScheme='orange'
                                 >
                                     <TagLabel>
-                                        {/* DV&nbsp; */}
+                                        DV&nbsp;
                                         {compactDisplayableBalance(dVriableBalance, tokenDecimal)}
                                     </TagLabel>
                                 </Tag>
@@ -125,11 +124,10 @@ const TokenSelectionItem = ({ token, onClick, isBalanceLoading }: TokenSelection
                                     size={'sm'}
                                     borderRadius='full'
                                     variant='solid'
-                                    // colorScheme='twitter'
-                                    backgroundColor={'#D3D3D3'}
+                                    colorScheme='red'
                                 >
                                     <TagLabel>
-                                        {/* DS&nbsp; */}
+                                        DS&nbsp;
                                         {compactDisplayableBalance(dStableBalance, tokenDecimal)}
                                     </TagLabel>
                                 </Tag>
