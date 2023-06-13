@@ -6,7 +6,7 @@ import { BaseProvider } from '@ethersproject/providers';
 import { ERC6551Registry } from '../abi-typechain/ERC6551Registry/ERC6551Registry';
 import { BytesLike } from 'ethers';
 
-export const CONTRACT_ADDRESS = "0xe314df549a6aC3c0F7D18E123CC985f8916eD988"
+export const CONTRACT_ADDRESS = "0x62aBD72DB8327257cbfaB8bd4eC7b95Edeffc4f4"
 export class ERC6551_Registry {
   private readonly contract: ERC6551Registry;
 
