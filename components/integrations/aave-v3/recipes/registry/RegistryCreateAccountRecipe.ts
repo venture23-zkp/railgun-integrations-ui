@@ -20,11 +20,11 @@ export class RegistryCreateAccountRecipe extends Recipe {
   constructor(createData: RegistryCreateAccountData, registry: Address) {
     super();
     const bigId = BigNumber.from(createData.tokenId);
-    if (!bigId.lt(SNARK_SCALAR_FIELD)) {
-      throw new Error(
-        `CreateAccount: id should be less that SNARK_SCALAR_FIELD (${SNARK_SCALAR_FIELD})`
-      );
-    }
+    // if (!bigId.lt(SNARK_SCALAR_FIELD)) {
+    //   throw new Error(
+    //     `CreateAccount: id should be less that SNARK_SCALAR_FIELD (${SNARK_SCALAR_FIELD})`
+    //   );
+    // }
     if (!isAddress(createData.tokenContract)) {
       throw new Error(`CreateAccount:): token contract should be a contract address`);
     }

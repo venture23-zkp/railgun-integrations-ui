@@ -9,8 +9,8 @@ export type RegistryCreateAccountData = {
     implementation: string;
     chainId: BigNumber;
     tokenContract: string;
-    tokenId: BigNumber;
-    salt: BigNumber; 
+    tokenId: string;
+    salt: BigNumber;
     initData: BytesLike
 };
 export class RegistryCreateAccountStep extends Step {
@@ -32,7 +32,7 @@ export class RegistryCreateAccountStep extends Step {
     protected async getStepOutput(input: StepInput): Promise<UnvalidatedStepOutput> {
         const contract = new ERC6551_Registry(this.registry, provider({ chainId: this.data.chainId?.toNumber() }));
         const { implementation, chainId, tokenContract, tokenId, salt, initData } = this.data;
-        let populatedTransaction = await contract.createCreateAccount(implementation, chainId, tokenContract, tokenId, salt, initData);
+        let populatedTransaction = await contract.createCreateAccount(implementation, chainId, tokenContract, BigNumber.from(tokenId), salt, initData);
         return {
             populatedTransactions: [populatedTransaction],
             spentERC20Amounts: [],

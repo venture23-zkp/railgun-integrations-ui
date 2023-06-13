@@ -28,10 +28,9 @@ import useNotifications from '@/hooks/useNotifications';
 import useRailgunTx from '@/hooks/useRailgunTx';
 import { getNetwork } from '@/utils/networks';
 import { RegistryCreateAccountRecipe } from './recipes/registry/RegistryCreateAccountRecipe';
-import { SNARK_SCALAR_FIELD } from './utils/big-number';
 import { CONTRACT_ADDRESS as REGISTRY_CONTRACT_ADDRESS } from '@/contract/erc-6551-registry-contract';
 import { CONTRACT_ADDRESS as DEFAULT_ACCOUNT_ADDRESS } from '@/contract/default-erc-6551-account';
-import { MAX_UINT256 } from "./utils/big-number";
+import { MAX_UINT256_HEX } from "./utils/big-number";
 
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
@@ -54,7 +53,7 @@ const SetupACModal = ({ isOpen, onClose }: UseModalProps) => {
                 implementation: DEFAULT_ACCOUNT_ADDRESS,
                 chainId: BigNumber.from(chainId),
                 tokenContract: ZERO_ADDRESS,
-                tokenId: BigNumber.from(MAX_UINT256),
+                tokenId: MAX_UINT256_HEX,
                 salt: BigNumber.from(process.env.NEXT_PUBLIC_ERC6551_ACCOUNT_SALT as unknown as number),
                 initData: []
             }, REGISTRY_CONTRACT_ADDRESS);
