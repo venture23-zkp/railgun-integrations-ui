@@ -21,10 +21,14 @@ export type BasicTxnData = {
   asset: string;
   amount: BigNumber;
   action: TxnType;
-  interestRateMode: Optional<BigNumber>;
+  interestRateMode?: BigNumber;
   decimal: number;
 }
 
+const abiCoder = new ethers.utils.AbiCoder();
+
+export const encodeSignature = (sig: string) =>
+  ethers.utils.hexDataSlice(ethers.utils.id(sig), 0, 4).slice(2);
 
 
 export class AaveTransactionStep extends Step {
@@ -34,8 +38,6 @@ export class AaveTransactionStep extends Step {
   };
 
   private readonly txnData: BasicTxnData;
-  private spentTokens: RecipeERC20AmountRecipient;
-  private receivedTokens: StepOutputERC20Amount;
 
 
 
@@ -44,14 +46,12 @@ export class AaveTransactionStep extends Step {
     this.txnData = txnData;
   }
 
-  private getCallData(toCall: string, args: {}): Bytes {
-    const interface_ = new ethers.utils.Interface([]);
-    const functionSelector = interface_.getSighash(toCall);
-    const encodedParameters = ethers.utils.defaultAbiCoder.encode(Object.keys(args), Object.values(args));
-    const calldata = functionSelector + encodedParameters.substring(2);
-    const bytesArray = Buffer.from(calldata, 'hex');
-    return bytesArray;
-
+  private getCallData(toCall: string, args: { key: { type: string, value: any } }): Bytes {
+    let encoded = '';
+    encoded += encodeSignature(toCall);
+    console.log(Object.keys(args))
+    encoded += abiCoder.encode(Object.values(args).map(item => item.type), Object.values(args).map(item => item.value)).slice(2);
+    return ethers.utils.arrayify(`0x${encoded}`)
   }
 
   protected async getStepOutput(input: StepInput): Promise<UnvalidatedStepOutput> {
@@ -76,17 +76,20 @@ export class AaveTransactionStep extends Step {
       minBalance: amount,
     };
 
+    let spentTokens: RecipeERC20AmountRecipient | undefined = undefined;
+    let receivedTokens: StepOutputERC20Amount | undefined = undefined;
+
     switch (action) {
       case (TxnType.DEPOSIT):
         {
-          this.spentTokens = tokenSpent;
-          functionSig = 'supply()';
+          spentTokens = tokenSpent;
+          functionSig = 'supply(address,uint256,address,uint16)';
           // args = [asset, amount, account, 0];
           args = {
-            asset: asset,
-            amount: amount,
-            account: account,
-            refCode: 0
+            asset: { type: 'address', value: asset },
+            amount: { type: 'uint256', value: amount },
+            account: { type: 'address', value: account },
+            refCode: { type: 'uint256', value: 0 }
           }
           if (interestRateMode != undefined) {
             throw new Error('Interest Mode not required for deposit');
@@ -95,13 +98,13 @@ export class AaveTransactionStep extends Step {
         break;
       case (TxnType.WITHDRAW):
         {
-          this.receivedTokens = tokenReceived
+          receivedTokens = tokenReceived
           functionSig = 'withdraw(address,uint256,address)';
           // args = [asset, amount, account];
           args = {
-            asset: asset,
-            amount: amount,
-            account: account,
+            asset: { type: 'address', value: asset },
+            amount: { type: 'uint256', value: amount },
+            account: { type: 'address', value: account }
           }
           if (interestRateMode != undefined) {
             throw new Error('Interest Mode not required for withdraw');
@@ -111,28 +114,28 @@ export class AaveTransactionStep extends Step {
 
       case (TxnType.BORROW):
         {
-          this.receivedTokens = tokenReceived;
+          receivedTokens = tokenReceived;
           functionSig = 'borrow(address,uint256,uint256,uint16,address)';
           // args = [asset, amount, interestRateMode, 0, account];
           args = {
-            asset: asset,
-            amount: amount,
-            account: account,
-            refCode: 0,
-            interestRateMode: interestRateMode
+            asset: { type: 'address', value: asset },
+            amount: { type: 'uint256', value: amount },
+            account: { type: 'address', value: account },
+            refCode: { type: 'uint256', value: 0 },
+            interestRateMode: { type: 'uint256', value: interestRateMode }
           }
           break;
         }
       case (TxnType.REPAY):
         {
-          this.spentTokens = tokenSpent
+          spentTokens = tokenSpent
           functionSig = 'repay(address,uint256,uint256,address)';
           args = [asset, amount, interestRateMode, account];
           args = {
-            asset: asset,
-            amount: amount,
-            account: account,
-            interestRateMode: interestRateMode
+            asset: { type: 'address', value: asset },
+            amount: { type: 'uint256', value: amount },
+            account: { type: 'address', value: account },
+            interestRateMode: { type: 'uint256', value: interestRateMode }
           }
           break;
         }
@@ -146,8 +149,8 @@ export class AaveTransactionStep extends Step {
     const populatedTransaction = await contract.createExecuteCall(account, BigNumber.from(0), callData);
     return {
       populatedTransactions: [populatedTransaction],
-      spentERC20Amounts: [this.spentTokens],
-      outputERC20Amounts: [this.receivedTokens],
+      spentERC20Amounts: spentTokens ? [spentTokens] : [],
+      outputERC20Amounts: receivedTokens ? [receivedTokens] : [],
       spentNFTs: [],
       outputNFTs: input.nfts,
       feeERC20AmountRecipients: [],
