@@ -75,7 +75,7 @@ const TxFrom = ({
                 ACM NFT ID
               </Heading>
               <Text pt="2" fontSize="sm">
-                {account.id}
+                {account?.id}
               </Text>
             </Box>
             <Box>
@@ -83,7 +83,7 @@ const TxFrom = ({
                 AC Contract Address
               </Heading>
               <Text pt="2" fontSize="sm">
-                {account.contract}
+                {account?.contract}
               </Text>
             </Box>
           </Stack>

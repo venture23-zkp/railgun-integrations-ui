@@ -8664,6 +8664,78 @@
       "decimals": 18,
       "logoURI": "https://assets.coingecko.com/coins/images/2518/thumb/weth.png?1608803028",
       "aaveSupported": true
+    },
+    {
+      "chainId": 80001,
+      "address": "0x2020b82569721DF47393505eeEDF2863D6A0504f",
+      "name": "AAVE",
+      "symbol": "AAVE",
+      "decimals": 18,
+      "logoURI": "https://assets.coingecko.com/coins/images/12645/thumb/AAVE.png?1608803028",
+      "aaveSupported": true
+    },
+    {
+      "chainId": 80001,
+      "address": "0xF14f9596430931E177469715c591513308244e8F",
+      "name": "DAI",
+      "symbol": "DAI",
+      "decimals": 18,
+      "logoURI": "https://assets.coingecko.com/coins/images/9956/thumb/4943.png?1608803028",
+      "aaveSupported": true
+    },
+    {
+      "chainId": 80001,
+      "address": "0x4e2f1E0dC4EAD962d3c3014e582d974b3cedF743",
+      "name": "LINK",
+      "symbol": "LINK",
+      "decimals": 18,
+      "logoURI": "https://assets.coingecko.com/coins/images/6450/thumb/linklogo.png?1608803028",
+      "aaveSupported": true
+    },
+    {
+      "chainId": 80001,
+      "address": "0xe9DcE89B076BA6107Bb64EF30678efec11939234",
+      "name": "USDC",
+      "symbol": "USDC",
+      "decimals": 6,
+      "logoURI": "https://assets.coingecko.com/coins/images/6319/thumb/USD_Coin_icon.png?1608803028",
+      "aaveSupported": true
+    },
+    {
+      "chainId": 80001,
+      "address": "0x97e8dE167322a3bCA28E8A49BC46F6Ce128FEC68",
+      "name": "WBTC",
+      "symbol": "WBTC",
+      "decimals": 8,
+      "logoURI": "https://assets.coingecko.com/coins/images/7598/thumb/wrapped_bitcoin_wbtc.png?1608803028",
+      "aaveSupported": true
+    },
+    {
+      "chainId": 80001,
+      "address": "0xF6379c02780AB48f55EE5F79dC5083C5a15583b9",
+      "name": "EURS",
+      "symbol": "EURS",
+      "decimals": 2,
+      "logoURI": "https://assets.coingecko.com/coins/images/5164/thumb/EURS_300x300.png?1608803028",
+      "aaveSupported": true
+    },
+    {
+      "chainId": 80001,
+      "address": "0xAcDe43b9E5f72a4F554D4346e69e8e7AC8F352f0",
+      "name": "USDT",
+      "symbol": "USDT",
+      "decimals": 6,
+      "logoURI": "https://assets.coingecko.com/coins/images/325/thumb/Tether.png?1608803028",
+      "aaveSupported": true
+    },
+    {
+      "chainId": 80001,
+      "address": "0xD087ff96281dcf722AEa82aCA57E8545EA9e6C96",
+      "name": "WETH",
+      "symbol": "WETH",
+      "decimals": 18,
+      "logoURI": "https://assets.coingecko.com/coins/images/2518/thumb/weth.png?1608803028",
+      "aaveSupported": true
     }
   ]
 }

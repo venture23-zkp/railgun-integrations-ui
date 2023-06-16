@@ -536,7 +536,7 @@ const useRailgunTx = () => {
       );
 
       const recipeOutput = await recipe.getRecipeOutput(input);
-      console.log(recipeOutput);
+      console.log("recipeOutput::::", recipeOutput);
 
       const {
         populatedTransactions,
@@ -568,23 +568,24 @@ const useRailgunTx = () => {
       // true for self-signing, false for Relayer
       const sendWithPublicWallet = true;
 
-      const { gasEstimateString, error: gasEstimateForUnprovenCrossContractCallsError } =
-        await gasEstimateForUnprovenCrossContractCalls(
-          networkName,
-          wallet?.id!,
-          encryptionKey!,
-          relayAdaptUnshieldERC20Amounts,
-          relayAdaptUnshieldNFTAmounts,
-          relayAdaptShieldERC20Addresses,
-          relayAdaptShieldNFTs,
-          crossContractCallsSerialized,
-          originalGasDetailsSerialized,
-          feeTokenDetails,
-          sendWithPublicWallet
-        );
-      if (gasEstimateForUnprovenCrossContractCallsError || gasEstimateString === undefined) {
-        throw new Error(gasEstimateForUnprovenCrossContractCallsError || 'No gasEstimateString!');
-      }
+      console.log(relayAdaptUnshieldERC20Amounts, relayAdaptShieldERC20Addresses)
+      // const { gasEstimateString, error: gasEstimateForUnprovenCrossContractCallsError } =
+      //   await gasEstimateForUnprovenCrossContractCalls(
+      //     networkName,
+      //     wallet?.id!,
+      //     encryptionKey!,
+      //     relayAdaptUnshieldERC20Amounts,
+      //     relayAdaptUnshieldNFTAmounts,
+      //     relayAdaptShieldERC20Addresses,
+      //     relayAdaptShieldNFTs,
+      //     crossContractCallsSerialized,
+      //     originalGasDetailsSerialized,
+      //     feeTokenDetails,
+      //     sendWithPublicWallet
+      //   );
+      // if (gasEstimateForUnprovenCrossContractCallsError || gasEstimateString === undefined) {
+      //   throw new Error(gasEstimateForUnprovenCrossContractCallsError || 'No gasEstimateString!');
+      // }
 
       const relayerFeeERC20AmountRecipient = undefined;
 
@@ -628,7 +629,7 @@ const useRailgunTx = () => {
       // };
       const gasDetailsSerialized: TransactionGasDetailsSerialized = {
         ...originalGasDetailsSerialized,
-        gasEstimateString,
+        gasEstimateString: '0x4C4B40',
       };
 
       const {

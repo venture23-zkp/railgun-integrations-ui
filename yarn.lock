@@ -2222,9 +2222,8 @@
   resolved "https://registry.yarnpkg.com/@popperjs/core/-/core-2.11.7.tgz#ccab5c8f7dc557a52ca3288c10075c9ccd37fff7"
   integrity sha512-Cr4OjIkipTtcXKjAsm8agyleBuDHvxzeBoa1v543lbv1YaIwQjESsVcmjiWiPEbC1FIeHOG/Op9kdCmAmiS3Kw==
 
-"@railgun-community/cookbook@https://github.com/venture23-zkp/railgun_cookbook.git#642f0693de62031a1270a7af840ecfaa34bf109a":
+"@railgun-community/cookbook@file:../cookbook":
   version "1.1.2"
-  resolved "https://github.com/venture23-zkp/railgun_cookbook.git#642f0693de62031a1270a7af840ecfaa34bf109a"
   dependencies:
     "@0x/contract-addresses" "^8.5.0"
     "@ethersproject/bignumber" "^5.7.0"
@@ -2239,7 +2238,7 @@
     "@graphql-mesh/store" "^0.9.20"
     "@graphql-mesh/types" "^0.91.14"
     "@graphql-mesh/utils" "^0.43.22"
-    "@railgun-community/shared-models" "https://github.com/venture23-zkp/shared-models.git#89b4695d58249e735751b2a1d18add012706411f"
+    "@railgun-community/shared-models" "file:../../../.cache/yarn/v6/npm-@railgun-community-cookbook-1.1.2-162e7863-f7fa-4288-afc6-45c7e601451c-1686844406340/node_modules/@railgun-community/shared-models"
     axios "^1.4.0"
     custom-uniswap-v2-sdk "^3.2.0"
     ethers "^5.7.2"
@@ -2296,9 +2295,8 @@
     levelup "^5.1.1"
     msgpack-lite "^0.1.26"
 
-"@railgun-community/quickstart@https://github.com/venture23-zkp/quickstart.git#977f9c9cb37e856941f00ee7d6ff4cf249f439df":
+"@railgun-community/quickstart@file:../quickstart":
   version "4.4.3"
-  resolved "https://github.com/venture23-zkp/quickstart.git#977f9c9cb37e856941f00ee7d6ff4cf249f439df"
   dependencies:
     "@graphql-mesh/cache-localforage" "^0.7.20"
     "@graphql-mesh/cross-helpers" "^0.3.4"
@@ -2311,23 +2309,14 @@
     "@graphql-mesh/utils" "^0.43.22"
     "@noble/ed25519" "^1.7.1"
     "@railgun-community/engine" "4.3.5"
-    "@railgun-community/shared-models" "git://github.com/venture23-zkp/shared-models.git#89b4695d58249e735751b2a1d18add012706411f"
+    "@railgun-community/shared-models" "file:../../../.cache/yarn/v6/npm-@railgun-community-quickstart-4.4.3-e49ea798-04e0-49c6-af4a-9db4c7406271-1686844406436/node_modules/@railgun-community/shared-models"
     "@whatwg-node/fetch" "^0.8.4"
     axios "0.27.2"
     brotli "^1.3.3"
     graphql "^16.6.0"
 
-"@railgun-community/shared-models@git://github.com/venture23-zkp/shared-models.git#89b4695d58249e735751b2a1d18add012706411f":
+"@railgun-community/shared-models@file:../shared-models":
   version "4.2.2"
-  uid "89b4695d58249e735751b2a1d18add012706411f"
-  resolved "git://github.com/venture23-zkp/shared-models.git#89b4695d58249e735751b2a1d18add012706411f"
-  dependencies:
-    "@ethersproject/contracts" "^5.7.0"
-    "@ethersproject/transactions" "^5.7.0"
-
-"@railgun-community/shared-models@https://github.com/venture23-zkp/shared-models.git#89b4695d58249e735751b2a1d18add012706411f":
-  version "4.2.2"
-  resolved "https://github.com/venture23-zkp/shared-models.git#89b4695d58249e735751b2a1d18add012706411f"
   dependencies:
     "@ethersproject/contracts" "^5.7.0"
     "@ethersproject/transactions" "^5.7.0"

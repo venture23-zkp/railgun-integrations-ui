@@ -31,6 +31,7 @@ import {
         tokenAddress:asset,
         decimals:decimal ,
       };
+
       return [
         new ApproveERC20SpenderStep(account, depositERC20Info),
         new TransferERC20Step(account,depositERC20Info),

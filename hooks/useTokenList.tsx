@@ -44,5 +44,6 @@ export const useTokenList = () => {
   }
   const tokens = [baseToken, ...tokenList];
   const localTokens = localTokenList || [];
+
   return { tokenList: [...tokens, ...localTokens] };
 };

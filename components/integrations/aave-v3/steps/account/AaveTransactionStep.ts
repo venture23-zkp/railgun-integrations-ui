@@ -51,6 +51,7 @@ export class AaveTransactionStep extends Step {
     encoded += encodeSignature(toCall);
     console.log(Object.keys(args))
     encoded += abiCoder.encode(Object.values(args).map(item => item.type), Object.values(args).map(item => item.value)).slice(2);
+    console.log("CALL_DATA:: ", encoded);
     return ethers.utils.arrayify(`0x${encoded}`)
   }
 
@@ -144,11 +145,26 @@ export class AaveTransactionStep extends Step {
       }
 
     }
+
     const callData = this.getCallData(functionSig, args);
 
-    const populatedTransaction = await contract.createExecuteCall(account, BigNumber.from(0), callData);
+    // 1. approve step (only for deposit and repay)
+    const approveFuncSig = "approve(address,uint256)"
+    const approveCallData = this.getCallData(approveFuncSig, {
+      approveTo: {
+        type: "address",
+        value: '0x0b913A76beFF3887d35073b8e5530755D60F78C7'
+      },
+      amount: {
+        type: "uint256",
+        value: amount
+      }
+    })
+
+    const approveTransaction = await contract.createExecuteCall(asset, BigNumber.from(0), approveCallData)
+    const populatedTransaction = await contract.createExecuteCall('0x0b913A76beFF3887d35073b8e5530755D60F78C7', BigNumber.from(0), callData);
     return {
-      populatedTransactions: [populatedTransaction],
+      populatedTransactions: [approveTransaction, populatedTransaction],
       spentERC20Amounts: spentTokens ? [spentTokens] : [],
       outputERC20Amounts: receivedTokens ? [receivedTokens] : [],
       spentNFTs: [],

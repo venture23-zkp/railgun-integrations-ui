@@ -102,6 +102,7 @@ export const TokenListProvider = ({
       }
       const tokenList: TokenListContextItem[] = await Promise.all(
         data.map(async (token) => {
+          console.log("fetching balance!!!! ", wallet)
           const balance = await wallet?.getBalance(
             {
               id: chainId,

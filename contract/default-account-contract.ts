@@ -19,7 +19,7 @@ export class DefaultAccount {
       throw new Error('Invalid account address');
     }
     this.contract = new Contract(
-        account,
+      account,
       abi.Default_Account,
       provider,
     ) as DefaultERC6551Account;

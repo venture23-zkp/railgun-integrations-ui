@@ -9,17 +9,18 @@
     "lint": "eslint .",
     "checkFormat": "yarn prettier --check . ",
     "format": "yarn prettier --write .",
-    "export": "yarn build && next export"
+    "export": "yarn build && next export",
+    "clean-run": "rm -r .next && yarn dev"
   },
   "dependencies": {
     "@chakra-ui/icons": "^2.0.17",
     "@chakra-ui/react": "^2.4.6",
     "@emotion/react": "^11",
     "@emotion/styled": "^11",
-    "@railgun-community/cookbook": "https://github.com/venture23-zkp/railgun_cookbook.git#e09bae6563309c8320dde3f282c93137c91ca140",
+    "@railgun-community/cookbook": "file:../cookbook",
     "@railgun-community/engine": "^4.3.5",
-    "@railgun-community/quickstart": "https://github.com/venture23-zkp/quickstart.git#1e6c0cf0bc82cc63ad23c1fb96d061ceed32ee4c",
-    "@railgun-community/shared-models": "https://github.com/venture23-zkp/shared-models.git#7ccbdb5b291e233923f97add438f856b2e18c660",
+    "@railgun-community/quickstart": "file:../quickstart",
+    "@railgun-community/shared-models": "file:../shared-models",
     "@rainbow-me/rainbowkit": "^0.8.1",
     "browser-level": "^1.0.1",
     "ethers": "^5.0.0",
