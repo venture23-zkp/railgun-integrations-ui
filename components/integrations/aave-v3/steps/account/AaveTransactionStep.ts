@@ -121,9 +121,9 @@ export class AaveTransactionStep extends Step {
           args = {
             asset: { type: 'address', value: asset },
             amount: { type: 'uint256', value: amount },
-            account: { type: 'address', value: account },
+            interestRateMode: { type: 'uint256', value: interestRateMode },
             refCode: { type: 'uint256', value: 0 },
-            interestRateMode: { type: 'uint256', value: interestRateMode }
+            account: { type: 'address', value: account },
           }
           break;
         }
