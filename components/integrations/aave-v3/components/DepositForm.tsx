@@ -141,7 +141,7 @@ const DepositForm = ({ id }: Account) => {
       </Button>
       {selectedToken && (
         <ReviewDepositTransactionModal
-          isOpen={false}
+          isOpen={!!selectedToken}
           // isOpen={!!selectedToken
           onClose={() => { setSelectedToken(null) }}
           id={id}
@@ -168,7 +168,7 @@ type ReviewDepositTransactionModalProps = {
   onSubmitClick: () => void;
 };
 
-const amt = BigNumber.from(1);
+const amt = BigNumber.from(1000);
 const account = "0xd7EA16B6dd857381275C4EB5F416d9Cba521b5E4"; // from "accounts" method of erc1655registry
 const tokenId = "9"; // nft id that gets minted when we create a new account
 
@@ -218,7 +218,7 @@ const ReviewDepositTransactionModal = ({
           {
             isBaseToken: false,  //
             tokenAddress: token.address,  // usdc address
-            amount: BigNumber.from(1),  // usdc amount
+            amount: amt,  // usdc amount
             decimals: 6,  // usdc decimals
           },
         ],
