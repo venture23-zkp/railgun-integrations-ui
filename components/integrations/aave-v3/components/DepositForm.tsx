@@ -27,25 +27,9 @@ import useRailgunTx from '@/hooks/useRailgunTx';
 import { VALID_AMOUNT_REGEX, ethAddress } from '@/utils/constants';
 import { getNetwork } from '@/utils/networks';
 import { isAmountParsable } from '@/utils/token';
-import { CONTRACT_ADDRESS as ACM_CONTRACT_ADDRESS } from '@/contract/acm';
 import { AaveV3DepositRecipe } from '../recipes/account/AaveV3DepositRecipe';
 import { TxnType } from "../steps/account/AaveTransactionStep";
 import { CONTRACT_ADDRESS as REGISTRY_CONTRACT_ADDRESS } from '@/contract/erc-6551-registry-contract';
-import { getTokenDataHash } from '@railgun-community/engine';
-
-// 000000000000000000000000e9dce89b076ba6107bb64ef30678efec11939234
-console.log(getTokenDataHash({
-  tokenType: 0,
-  tokenAddress: '0xe9dce89b076ba6107bb64ef30678efec11939234',
-  tokenSubID: '0x0000000000000000000000000000000000000000000000000000000000000000',
-}))
-
-// 29ed69b03abed3ae488c0cd16cd904782d6732a9bd1278dd29598c501b45162c
-console.log(getTokenDataHash({
-  tokenType: 1,
-  tokenAddress: '0x62abd72db8327257cbfab8bd4ec7b95edeffc4f4',
-  tokenSubID: '0x0000000000000000000000000000000000000000000000000000000000000001',
-}))
 
 type FormInput = {
   token: string;
@@ -157,7 +141,8 @@ const DepositForm = ({ id }: Account) => {
       </Button>
       {selectedToken && (
         <ReviewDepositTransactionModal
-          isOpen={!!selectedToken}
+          isOpen={false}
+          // isOpen={!!selectedToken
           onClose={() => { setSelectedToken(null) }}
           id={id}
           token={selectedToken}
@@ -183,6 +168,10 @@ type ReviewDepositTransactionModalProps = {
   onSubmitClick: () => void;
 };
 
+const amt = BigNumber.from(1);
+const account = "0xd7EA16B6dd857381275C4EB5F416d9Cba521b5E4"; // from "accounts" method of erc1655registry
+const tokenId = "9"; // nft id that gets minted when we create a new account
+
 const ReviewDepositTransactionModal = ({
   isOpen,
   onClose,
@@ -206,84 +195,14 @@ const ReviewDepositTransactionModal = ({
     if (!token.address || !token.decimals) throw new Error('bad form');
     try {
       setError(undefined);
-      // const depositRecipe = new AaveV3DepositRecipe(
-      //   ACM_CONTRACT_ADDRESS,
-      //   {
-      //     id: BigNumber.from(id),
-      //     tokenAddress: token.address,
-      //     amount: tokenAmount,
-      //   },
-      //   token.decimals
-      // );
 
-      const amt = BigNumber.from(1);
-      console.log('AMT:::: ', amt)
-
-      console.log({
-        account: '0xd7EA16B6dd857381275C4EB5F416d9Cba521b5E4', // from "accounts" method of erc1655registry
-        asset: token.address, // usdc address
-        amount: amt, // just 1 usdc
-        action: TxnType.DEPOSIT, // deposit action
-        interestRateMode: 1,
-        decimal: token.decimals, // 6 
-      })
-
-
-      /*
-      account: "0xd7EA16B6dd857381275C4EB5F416d9Cba521b5E4"
-      action: 0
-      amount: BigNumber {_hex: '0x01', _isBigNumber: true}
-      asset: "0x65aFADD39029741B3b8f0756952C74678c9cEC93"
-      decimal: 6
-      interestRateMode: 1
-      */
       const depositRecipe = new AaveV3DepositRecipe({
-        account: '0xd7EA16B6dd857381275C4EB5F416d9Cba521b5E4',
+        account: account,
         asset: token.address, // usdc address
         amount: amt, // just 1 usdc
         action: TxnType.DEPOSIT, // deposit action
         decimal: token.decimals, // 6 
       });
-
-
-      /*
-      {
-        networkName: "Polygon_Mumbai"
-        erc20Amounts: [{
-          amount: BigNumber {_hex: '0x01', _isBigNumber: true}
-          decimals: 6,
-          isBaseToken: false,
-          tokenAddress: "0x65aFADD39029741B3b8f0756952C74678c9cEC93"  
-        }],
-        nfts: [{
-          amountString: "1",
-          nftAddress: "0x62aBD72DB8327257cbfaB8bd4eC7b95Edeffc4f4",
-          nftTokenType: 1
-          tokenSubID: "1"
-        }]
-      }
-      */
-      console.log({
-        networkName: network.railgunNetworkName,
-        nfts: [
-          {
-            nftTokenType: NFTTokenType.ERC721,
-            nftAddress: REGISTRY_CONTRACT_ADDRESS,
-            tokenSubID: "9",  // nft id that gets minted after creating an account
-            amountString: '1',
-          },
-        ],
-        erc20Amounts: [
-          {
-            isBaseToken: false,  //
-            tokenAddress: token.address,  // usdc address
-            amount: amt,  // usdc amount
-            decimals: 6,  // usdc decimals
-          },
-        ],
-      })
-
-      alert("pause")
 
       const tx = await executeRecipe(depositRecipe, {
         networkName: network.railgunNetworkName,
@@ -291,7 +210,7 @@ const ReviewDepositTransactionModal = ({
           {
             nftTokenType: NFTTokenType.ERC721,
             nftAddress: REGISTRY_CONTRACT_ADDRESS,
-            tokenSubID: "9",
+            tokenSubID: tokenId,
             amountString: '1',
           },
         ],

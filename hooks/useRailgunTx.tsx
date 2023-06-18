@@ -153,7 +153,6 @@ const useRailgunTx = () => {
   };
 
   const unshieldBaseToken = async ({ amount, recipient, decimals }: TokenTransferType) => {
-    console.log('unshielding base');
     const wrappedERC20Amount: RailgunERC20Amount = {
       tokenAddress: wethAddress, // wETH
       amountString: parseUnits(amount!, decimals).toHexString(), // hexadecimal amount
@@ -505,16 +504,12 @@ const useRailgunTx = () => {
       throw new Error(populateProvedTransferError || 'No serializedTransaction!');
     }
 
-    console.log('nullifiers:', nullifiers);
-
     const nonce = await signer?.getTransactionCount();
 
     const transactionRequest = deserializeTransaction(serializedTransaction, nonce, chainId);
 
     // Public wallet to shield from.
     transactionRequest.from = await signer?.getAddress();
-
-    console.log(transactionRequest);
 
     // send transactionRequest to Relay.sol
     return await signer!.sendTransaction(transactionRequest);
@@ -536,7 +531,6 @@ const useRailgunTx = () => {
       );
 
       const recipeOutput = await recipe.getRecipeOutput(input);
-      console.log("recipeOutput::::", recipeOutput);
 
       const {
         populatedTransactions,
