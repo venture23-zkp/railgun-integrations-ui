@@ -193,7 +193,7 @@ const ReviewWithdrawTransactionModal = ({
         asset: token.address, // usdc address
         amount: amt, // just 1 usdc
         action: TxnType.WITHDRAW, // deposit action
-        // decimal: token.decimals, // 6 
+        decimal: token.decimals, // 6 
       });
       const tx = await executeRecipe(withdrawRecipe, {
         networkName: network.railgunNetworkName,
@@ -206,12 +206,12 @@ const ReviewWithdrawTransactionModal = ({
           },
         ],
         erc20Amounts: [
-          {
-            isBaseToken: false,
-            tokenAddress: token.address,
-            amount: amt,
-            decimals: token.decimals,
-          },
+          // {
+          //   isBaseToken: false,
+          //   tokenAddress: token.address,
+          //   amount: amt,
+          //   decimals: token.decimals,
+          // },
         ],
       });
       txNotify(tx.hash);

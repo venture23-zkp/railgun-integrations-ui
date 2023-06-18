@@ -22,7 +22,7 @@ export type BasicTxnData = {
   amount: BigNumber;
   action: TxnType;
   interestRateMode?: BigNumber;
-  decimal?: number;
+  decimal: number;
 }
 
 const abiCoder = new ethers.utils.AbiCoder();
@@ -135,8 +135,8 @@ export class AaveTransactionStep extends Step {
           args = {
             asset: { type: 'address', value: asset },
             amount: { type: 'uint256', value: amount },
-            account: { type: 'address', value: account },
-            interestRateMode: { type: 'uint256', value: interestRateMode }
+            interestRateMode: { type: 'uint256', value: interestRateMode },
+            account: { type: 'address', value: account }
           }
           break;
         }
