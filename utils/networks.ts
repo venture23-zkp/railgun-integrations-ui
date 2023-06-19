@@ -54,7 +54,7 @@ const polygonMumbai = {
       webSocket: ["wss://polygon-mumbai.infura.io/ws/v3"]
     },
     default: {
-      http: ["https://matic-mumbai.chainstacklabs.com"]
+      http: ["https://polygon-mumbai.g.alchemy.com/v2/demo"]
     }
   },
   blockExplorers: {

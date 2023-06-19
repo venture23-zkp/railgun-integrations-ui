@@ -29,7 +29,7 @@ import {
       const { asset,decimal,account } = this.data;
       const repayERC20Info: RecipeERC20Info = {
         tokenAddress:asset,
-        decimals:decimal ,
+        decimals:decimal!,
       };
       return [
         new ApproveERC20SpenderStep(account, repayERC20Info),

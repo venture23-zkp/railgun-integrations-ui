@@ -2,14 +2,17 @@ import React, { ReactNode, createContext, useContext, useEffect, useMemo, useSta
 import { Balances, TokenType } from '@railgun-community/engine';
 import { parseRailgunTokenAddress } from '@railgun-community/quickstart';
 import { ChainType } from '@railgun-community/shared-models';
+import { BigNumber } from 'ethers';
 import { useNetwork } from 'wagmi';
-import { NFTListItem, useNFTList } from '@/hooks/useNFTList';
-import { useRailgunWallet } from './RailgunWalletContext';
-import { useToken } from '@/contexts/TokenContext';
-import { CONTRACT_ADDRESS as ACM_CONTRACT_ADDRESS } from '@/contract/acm';
 import { readContracts } from 'wagmi';
 import { abi } from '@/abi-typechain/abi';
+import { useToken } from '@/contexts/TokenContext';
+import { CONTRACT_ADDRESS as ACM_CONTRACT_ADDRESS } from '@/contract/acm';
+import { CONTRACT_ADDRESS as DEFAULT_ACCOUNT_ADDRESS } from '@/contract/default-erc-6551-account';
+import { CONTRACT_ADDRESS as REGISTRY_CONTRACT_ADDRESS } from '@/contract/erc-6551-registry-contract';
+import { NFTListItem, useNFTList } from '@/hooks/useNFTList';
 import AcmAccountType from '@/types/AcmAccount';
+import { useRailgunWallet } from './RailgunWalletContext';
 
 function getNFTBalances(balances: Balances, nftAddresses?: string[]) {
   const nftAddressMap = nftAddresses?.reduce((acc, address) => {
@@ -60,7 +63,7 @@ const initialContext: NFTContextType = {
   nftList: [],
   accounts: [],
   selectedAccount: undefined,
-  setSelectedAccount: () => { }
+  setSelectedAccount: () => {},
 };
 
 const NFTContext = createContext<NFTContextType>(initialContext);
@@ -108,20 +111,27 @@ export const NFTListProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (!hasLoaded) return;
     const fn = async () => {
-      console.log(nftListWithBalance)
-      const acm = nftListWithBalance.find(({ address }) => address === ACM_CONTRACT_ADDRESS);
+      console.log('nftListWithBalance', nftListWithBalance);
+      const acm = nftListWithBalance.find(({ address }) =>address === REGISTRY_CONTRACT_ADDRESS);
       if (!acm) return;
-      const accountIds = acm.privateSubIds;
+      const tokenids = acm.privateSubIds;
       const contracts = (await readContracts({
-        contracts: accountIds.map((accountId) => ({
-          abi: abi.ACM,
-          address: ACM_CONTRACT_ADDRESS,
-          functionName: 'nftAc',
-          args: [accountId],
+        contracts: tokenids.map((accountId) => ({
+          abi: abi.ERC6551_Registry,
+          address: REGISTRY_CONTRACT_ADDRESS,
+          functionName: 'account',
+          args: [
+            DEFAULT_ACCOUNT_ADDRESS,
+            chainId,
+            // ZERO_ADDRESS,
+            REGISTRY_CONTRACT_ADDRESS,
+            // MAX_UINT256_HEX,
+            process.env.NEXT_PUBLIC_TOKEN_ID,
+            BigNumber.from(process.env.NEXT_PUBLIC_ERC6551_ACCOUNT_SALT),
+          ],
         })),
       })) as string[];
-
-      setAccounts(accountIds.map((id, i) => ({ id, contract: contracts[i] })));
+      setAccounts(tokenids.map((id, i) => ({ id, contract: contracts[i] })));
     };
     fn();
   }, [nftListWithBalance, hasLoaded]);
@@ -133,7 +143,7 @@ export const NFTListProvider = ({ children }: { children: ReactNode }) => {
         nftList: nftListWithBalance || [],
         accounts,
         selectedAccount,
-        setSelectedAccount
+        setSelectedAccount,
       }}
     >
       {children}

@@ -36,7 +36,7 @@ type FormInput = {
   amount: string;
 };
 
-const DepositForm = ({ id }: Account) => {
+const DepositForm = ({ id, contract }: Account) => {
   const { tokenList } = useToken();
   const { chain } = useNetwork();
   const { isConnected } = useAccount();
@@ -51,7 +51,7 @@ const DepositForm = ({ id }: Account) => {
     // defaultValues: {},
   });
   const { isOpen: isReviewOpen, onOpen: openReview, onClose: closeReview } = useDisclosure();
-  const [selectedToken, setSelectedToken] = useState<TokenListContextItem>(tokenList.find(token => token.address === '0xe9DcE89B076BA6107Bb64EF30678efec11939234') as TokenListContextItem);
+  const [selectedToken, setSelectedToken] = useState<TokenListContextItem>();
   const [maxBalance, setMaxBalance] = useState();
   const [tokenAmount, setTokenAmount] = useState<string>('');
 
@@ -128,23 +128,24 @@ const DepositForm = ({ id }: Account) => {
         <FormErrorMessage my=".25rem">{errors.amount && errors.amount.message}</FormErrorMessage>
       </FormControl>
       <Button
-        // isDisabled={!isConnected || chain?.unsupported}
-        // type="submit"
+        isDisabled={!isConnected || chain?.unsupported}
+        type="submit"
         size="lg"
         mt=".75rem"
         width="100%"
-        onClick={() => {
-          setSelectedToken(tokenList.find(token => token.address === '0xe9DcE89B076BA6107Bb64EF30678efec11939234') as TokenListContextItem)
-        }}
+        // onClick={() => {
+        //   setSelectedToken(tokenList.find(token => token.address === '0xe9DcE89B076BA6107Bb64EF30678efec11939234') as TokenListContextItem)
+        // }}
       >
         Deposit
       </Button>
       {selectedToken && (
         <ReviewDepositTransactionModal
-          isOpen={!!selectedToken}
+          isOpen={isReviewOpen}
           // isOpen={!!selectedToken
-          onClose={() => { setSelectedToken(null) }}
+          onClose={() => { closeReview() }}
           id={id}
+          contract={contract}
           token={selectedToken}
           amount={tokenAmount}
           onSubmitClick={() => {
@@ -166,11 +167,12 @@ type ReviewDepositTransactionModalProps = {
   token: TokenListContextItem;
   amount: string;
   onSubmitClick: () => void;
+  contract: string
 };
 
-const amt = BigNumber.from(1000);
-const account = "0xd7EA16B6dd857381275C4EB5F416d9Cba521b5E4"; // from "accounts" method of erc1655registry
-const tokenId = "9"; // nft id that gets minted when we create a new account
+// const amt = BigNumber.from(10);
+// const account = "0xe54bEb27c8E6feE6f1Ead6968A65ca8855930BDD"; // from "accounts" method of erc1655registry
+// const tokenId = "14"; // nft id that gets minted when we create a new account
 
 const ReviewDepositTransactionModal = ({
   isOpen,
@@ -179,6 +181,7 @@ const ReviewDepositTransactionModal = ({
   id, // railgun wallet id
   token,
   onSubmitClick,
+  contract
 }: ReviewDepositTransactionModalProps) => {
   const { txNotify } = useNotifications();
   const { isExecuting, executeRecipe } = useRailgunTx();
@@ -196,10 +199,13 @@ const ReviewDepositTransactionModal = ({
     try {
       setError(undefined);
 
+      console.log(contract, tokenAmount, id)
+      alert('here')
+
       const depositRecipe = new AaveV3DepositRecipe({
-        account: account,
+        account: contract,
         asset: token.address, // usdc address
-        amount: amt, // just 1 usdc
+        amount: tokenAmount, // just 1 usdc
         action: TxnType.DEPOSIT, // deposit action
         decimal: token.decimals, // 6 
       });
@@ -210,7 +216,7 @@ const ReviewDepositTransactionModal = ({
           {
             nftTokenType: NFTTokenType.ERC721,
             nftAddress: REGISTRY_CONTRACT_ADDRESS,
-            tokenSubID: tokenId,
+            tokenSubID: id,
             amountString: '1',
           },
         ],
@@ -218,7 +224,7 @@ const ReviewDepositTransactionModal = ({
           {
             isBaseToken: false,  //
             tokenAddress: token.address,  // usdc address
-            amount: amt,  // usdc amount
+            amount: tokenAmount,  // usdc amount
             decimals: 6,  // usdc decimals
           },
         ],

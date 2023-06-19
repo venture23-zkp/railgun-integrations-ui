@@ -39,6 +39,7 @@ export class AaveTransactionStep extends Step {
 
   private readonly txnData: BasicTxnData;
   private readonly AAVE_PROXY_CONTRACT = "0x0b913A76beFF3887d35073b8e5530755D60F78C7";
+  private readonly RELAY_ADAPT_CONTRACT = "0x722937B98f0a98A9d9D23489E72Bd483E509f08b";
 
 
 
@@ -49,8 +50,10 @@ export class AaveTransactionStep extends Step {
 
   private getCallData(toCall: string, args: { key: { type: string, value: any } }): Bytes {
     let encoded = '';
+    console.log(args)
     encoded += encodeSignature(toCall);
     encoded += abiCoder.encode(Object.values(args).map(item => item.type), Object.values(args).map(item => item.value)).slice(2);
+    console.log(encoded)
     return ethers.utils.arrayify(`0x${encoded}`)
   }
 
@@ -150,7 +153,6 @@ export class AaveTransactionStep extends Step {
 
     const populatedTransaction = await contract.createExecuteCall(this.AAVE_PROXY_CONTRACT, BigNumber.from(0), callData);
     
-    let approveTransaction;
     if(action === TxnType.DEPOSIT || action === TxnType.REPAY)  {
       // 1. approve step (only for deposit and repay)
       const approveFuncSig = "approve(address,uint256)"
@@ -164,7 +166,7 @@ export class AaveTransactionStep extends Step {
           value: amount
         }
       })
-      approveTransaction = await contract.createExecuteCall(asset, BigNumber.from(0), approveCallData);
+      const approveTransaction = await contract.createExecuteCall(asset, BigNumber.from(0), approveCallData);
 
       return {
         populatedTransactions: [approveTransaction, populatedTransaction],
@@ -175,6 +177,41 @@ export class AaveTransactionStep extends Step {
         feeERC20AmountRecipients: [],
       };
     }
+
+    if(action === TxnType.WITHDRAW || action === TxnType.BORROW) {
+      // 1. approve step (only for deposit and repay)
+      const transferFuncSig = "transfer(address,uint256)"
+      const transferCallData = this.getCallData(transferFuncSig, {
+        receipent: {
+          type: "address",
+          value: this.RELAY_ADAPT_CONTRACT
+        },
+        amount: {
+          type: "uint256",
+          value: amount
+        }
+      })
+      const transferTransaction = await contract.createExecuteCall(asset, BigNumber.from(0), transferCallData);
+
+      console.log({
+        populatedTransactions: [populatedTransaction],
+        spentERC20Amounts: spentTokens ? [spentTokens] : [],
+        outputERC20Amounts: receivedTokens ? [receivedTokens] : [],
+        spentNFTs: [],
+        outputNFTs: input.nfts,
+        feeERC20AmountRecipients: [],
+      })
+
+      return {
+        populatedTransactions: [transferTransaction, populatedTransaction],
+        spentERC20Amounts: spentTokens ? [spentTokens] : [],
+        outputERC20Amounts: receivedTokens ? [receivedTokens] : [],
+        spentNFTs: [],
+        outputNFTs: input.nfts,
+        feeERC20AmountRecipients: [],
+      };
+    }
+
 
     return {
       populatedTransactions: [populatedTransaction],

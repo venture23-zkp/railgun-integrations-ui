@@ -1,11 +1,5 @@
-import React, {
-  ReactNode,
-  createContext,
-  useCallback,
-  useContext,
-  useState,
-} from 'react';
-import { RailgunWallet } from "@railgun-community/engine";
+import React, { ReactNode, createContext, useCallback, useContext, useState } from 'react';
+import { RailgunWallet } from '@railgun-community/engine';
 import {
   createRailgunWallet,
   fullWalletForID,
