@@ -31,9 +31,9 @@ import { getNetwork } from '@/utils/networks';
 import { isAmountParsable } from '@/utils/token';
 // import { AaveV3RepayRecipe } from '../recipes/acm/AaveV3RepayRecipe';
 import { AaveV3RepayRecipe } from '../recipes/account/AaveV3RepayRecipe';
+import { TxnType } from '../steps/account/AaveTransactionStep';
 import RepayTokenInput from './RepayTokenInput';
 import { Account } from './TxFrom';
-import { TxnType } from '../steps/account/AaveTransactionStep';
 
 type FormInput = {
   repayAmount: string;
@@ -42,7 +42,7 @@ type FormInput = {
   // collateralToken: string;
 };
 
-const RepayForm = ({ id }: Account) => {
+const RepayForm = ({ id, contract }: Account) => {
   const { tokenList } = useToken();
   const { chain } = useNetwork();
   const { isConnected } = useAccount();
@@ -161,6 +161,7 @@ const RepayForm = ({ id }: Account) => {
           id={id}
           token={selectedToken}
           amount={tokenAmount}
+          contract={contract}
           onSubmitClick={() => {
             reset((values) => ({
               ...values,
@@ -182,12 +183,13 @@ type ReviewRepayTransactionModalProps = {
   amount: string;
   onSubmitClick: () => void;
   interestMode: EInterestMode;
+  contract: string;
 };
 
-const amt = BigNumber.from(10);
-const account = '0xd7EA16B6dd857381275C4EB5F416d9Cba521b5E4'; // from "accounts" method of erc1655registry
-const tokenId = '9'; // nft id that gets minted when we create a new account
-const INTERESTMODE = BigNumber.from(1);
+// const amt = BigNumber.from(10);
+// const account = '0xd7EA16B6dd857381275C4EB5F416d9Cba521b5E4'; // from "accounts" method of erc1655registry
+// const tokenId = '9'; // nft id that gets minted when we create a new account
+// const INTERESTMODE = BigNumber.from(1);
 
 const ReviewRepayTransactionModal = ({
   isOpen,
@@ -197,6 +199,7 @@ const ReviewRepayTransactionModal = ({
   token,
   onSubmitClick,
   interestMode,
+  contract,
 }: ReviewRepayTransactionModalProps) => {
   const { txNotify } = useNotifications();
   const { isExecuting, executeRecipe } = useRailgunTx();
@@ -213,12 +216,12 @@ const ReviewRepayTransactionModal = ({
       setError(undefined);
       console.log(id);
       const repayRecipe = new AaveV3RepayRecipe({
-        account: account,
+        account: contract,
         asset: token.address, // usdc address
-        amount: amt, // just 1 usdc
+        amount: tokenAmount, // just 1 usdc
         action: TxnType.REPAY, // deposit action
         decimal: token.decimals, // 6
-        interestRateMode: INTERESTMODE,
+        interestRateMode: BigNumber.from(interestMode),
       });
       const tx = await executeRecipe(repayRecipe, {
         networkName: network.railgunNetworkName,
