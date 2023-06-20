@@ -203,7 +203,7 @@ export class AaveTransactionStep extends Step {
       })
 
       return {
-        populatedTransactions: [transferTransaction, populatedTransaction],
+        populatedTransactions: [populatedTransaction, transferTransaction],
         spentERC20Amounts: spentTokens ? [spentTokens] : [],
         outputERC20Amounts: receivedTokens ? [receivedTokens] : [],
         spentNFTs: [],
@@ -216,7 +216,7 @@ export class AaveTransactionStep extends Step {
     return {
       populatedTransactions: [populatedTransaction],
       spentERC20Amounts: spentTokens ? [spentTokens] : [],
-      outputERC20Amounts: receivedTokens ? [receivedTokens] : [],
+      outputERC20Amounts: receivedTokens ? [  ] : [],
       spentNFTs: [],
       outputNFTs: input.nfts,
       feeERC20AmountRecipients: [],

@@ -19,27 +19,27 @@ import { NFTTokenType } from '@railgun-community/shared-models';
 import { BigNumber, ethers } from 'ethers';
 import { parseUnits } from 'ethers/lib/utils.js';
 import { useAccount, useNetwork } from 'wagmi';
-import WithdrawTokenInput from './WithdrawTokenInput';
 import { useToken } from '@/contexts/TokenContext';
 import { TokenListContextItem } from '@/contexts/TokenContext';
+import { CONTRACT_ADDRESS as REGISTRY_CONTRACT_ADDRESS } from '@/contract/erc-6551-registry-contract';
 import useNotifications from '@/hooks/useNotifications';
 import useRailgunTx from '@/hooks/useRailgunTx';
 import { VALID_AMOUNT_REGEX, ethAddress } from '@/utils/constants';
 import { getNetwork } from '@/utils/networks';
 import { isAmountParsable } from '@/utils/token';
-import { CONTRACT_ADDRESS as REGISTRY_CONTRACT_ADDRESS } from '@/contract/erc-6551-registry-contract';
+import { AaveV3WithdrawRecipe } from '../recipes/account/AaveV3WithdrawRecipe';
 // import { CONTRACT_ADDRESS as ACM_CONTRACT_ADDRESS } from '@/contract/acm';
 // import { AaveV3WithdrawRecipe } from '../recipes/acm/AaveV3WithdrawRecipe';
-import { TxnType } from "../steps/account/AaveTransactionStep";
-import { AaveV3WithdrawRecipe } from '../recipes/account/AaveV3WithdrawRecipe';
+import { TxnType } from '../steps/account/AaveTransactionStep';
 import { Account } from './TxFrom';
+import WithdrawTokenInput from './WithdrawTokenInput';
 
 type FormInput = {
   token: string;
   amount: string;
 };
 
-const WithdrawForm = ({ id }: Account) => {
+const WithdrawForm = ({ id, contract }: Account) => {
   const { tokenList } = useToken();
   const { chain } = useNetwork();
   const { isConnected } = useAccount();
@@ -54,7 +54,7 @@ const WithdrawForm = ({ id }: Account) => {
     // defaultValues: {},
   });
   const { isOpen: isReviewOpen, onOpen: openReview, onClose: closeReview } = useDisclosure();
-  const [selectedToken, setSelectedToken] = useState<TokenListContextItem>();
+  const [selectedToken, setSelectedToken] = useState<TokenListContextItem>(tokenList[0]);
   const [tokenAmount, setTokenAmount] = useState<string>('');
 
   const onSubmit = handleSubmit(async (values) => {
@@ -62,11 +62,11 @@ const WithdrawForm = ({ id }: Account) => {
     openReview();
   });
 
-  // useEffect(() => {
-  //   if (!selectedToken) {
-  //     setSelectedToken(tokenList[0]);
-  //   }
-  // }, [selectedToken, tokenList]);
+  useEffect(() => {
+    if (!selectedToken) {
+      setSelectedToken(tokenList[0]);
+    }
+  }, [selectedToken, tokenList]);
 
   return (
     <form onSubmit={onSubmit}>
@@ -124,11 +124,8 @@ const WithdrawForm = ({ id }: Account) => {
         <FormErrorMessage my=".25rem">{errors.amount && errors.amount.message}</FormErrorMessage>
       </FormControl>
       <Button
-        // isDisabled={!isConnected || chain?.unsupported}
-        // type="submit"
-        onClick={() => {
-          setSelectedToken(tokenList.find(token => token.address === '0xe9DcE89B076BA6107Bb64EF30678efec11939234') as TokenListContextItem)
-        }}
+        isDisabled={!isConnected || chain?.unsupported}
+        type="submit"
         size="lg"
         mt=".75rem"
         width="100%"
@@ -137,16 +134,17 @@ const WithdrawForm = ({ id }: Account) => {
       </Button>
       {selectedToken && (
         <ReviewWithdrawTransactionModal
-          isOpen={!!selectedToken}
-          onClose={() => setSelectedToken(undefined)}
+          isOpen={isReviewOpen}
+          onClose={closeReview}
           id={id}
+          contract={contract}
           token={selectedToken}
           amount={tokenAmount}
           onSubmitClick={() => {
             reset((values) => ({
               ...values,
               amount: '',
-            })); tokenId
+            }));
           }}
         />
       )}
@@ -160,12 +158,13 @@ type ReviewWithdrawTransactionModalProps = {
   id: string;
   token: TokenListContextItem;
   amount: string;
+  contract: string;
   onSubmitClick: () => void;
 };
 
-const amt = BigNumber.from(1);
-const account = "0xd7EA16B6dd857381275C4EB5F416d9Cba521b5E4"; // from "accounts" method of erc1655registry
-const tokenId = "9"; // nft id that gets minted when we create a new account
+// const amt = BigNumber.from(1);
+// const account = "0xd7EA16B6dd857381275C4EB5F416d9Cba521b5E4"; // from "accounts" method of erc1655registry
+// const tokenId = "9"; // nft id that gets minted when we create a new account
 
 const ReviewWithdrawTransactionModal = ({
   isOpen,
@@ -174,6 +173,7 @@ const ReviewWithdrawTransactionModal = ({
   id,
   token,
   onSubmitClick,
+  contract,
 }: ReviewWithdrawTransactionModalProps) => {
   const { txNotify } = useNotifications();
   const { isExecuting, executeRecipe } = useRailgunTx();
@@ -187,13 +187,13 @@ const ReviewWithdrawTransactionModal = ({
   const doSubmit = useCallback(async () => {
     if (!token.address || !token.decimals) throw new Error('bad form');
     try {
-      alert('calling withdraw!!')
+      console.log(contract, tokenAmount, id)
       const withdrawRecipe = new AaveV3WithdrawRecipe({
-        account,
+        account: contract,
         asset: token.address, // usdc address
-        amount: amt, // just 1 usdc
+        amount: tokenAmount, // just 1 usdc
         action: TxnType.WITHDRAW, // deposit action
-        decimal: token.decimals, // 6 
+        decimal: token.decimals, // 6
       });
       const tx = await executeRecipe(withdrawRecipe, {
         networkName: network.railgunNetworkName,
@@ -201,7 +201,7 @@ const ReviewWithdrawTransactionModal = ({
           {
             nftTokenType: NFTTokenType.ERC721,
             nftAddress: REGISTRY_CONTRACT_ADDRESS,
-            tokenSubID: tokenId,
+            tokenSubID: id,
             amountString: '1',
           },
         ],
@@ -220,7 +220,7 @@ const ReviewWithdrawTransactionModal = ({
     } catch (e) {
       console.error(e);
       const err = e as Error & { reason?: string };
-      setError(err.reason ? err.reason : err.message);
+      setError(err.reason ? err.reason : err.tokenAmountmessage);
     }
   }, [network, id, token, tokenAmount, executeRecipe, onClose, txNotify, onSubmitClick]);
 

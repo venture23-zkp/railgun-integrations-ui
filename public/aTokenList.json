@@ -87,6 +87,26 @@
       "logoURI": "https://assets.coingecko.com/coins/images/2518/thumb/weth.png?1608803028",
       "aaveSupported": true,
       "originalTokenAddress": "0xCCB14936C2E000ED8393A571D15A2672537838Ad"
+    },
+    {
+      "chainId": 80001,
+      "address": "0x9daBC9860F8792AeE427808BDeF1f77eFeF0f24E",
+      "name": "USDC",
+      "symbol": "USDC",
+      "decimals": 6,
+      "logoURI": "https://assets.coingecko.com/coins/images/6319/thumb/USD_Coin_icon.png?1608803028",
+      "aaveSupported": true,
+      "originalTokenAddress": "0xe9DcE89B076BA6107Bb64EF30678efec11939234"
+    },
+    {
+      "chainId": 80001,
+      "address": "0xFAF6a49b4657D9c8dDa675c41cB9a05a94D3e9e9",
+      "name": "DAI",
+      "symbol": "DAI",
+      "decimals": 18,
+      "logoURI": "https://assets.coingecko.com/coins/images/9956/thumb/4943.png?1608803028",
+      "aaveSupported": true,
+      "originalTokenAddress": "0xF14f9596430931E177469715c591513308244e8F"
     }
   ]
 }

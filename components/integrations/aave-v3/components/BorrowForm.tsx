@@ -43,7 +43,7 @@ type FormInput = {
   // collateralToken: string;
 };
 
-const BorrowForm = ({ id }: Account) => {
+const BorrowForm = ({ id, contract }: Account) => {
   const { tokenList } = useToken();
   const { chain } = useNetwork();
   const { isConnected } = useAccount();
@@ -68,11 +68,11 @@ const BorrowForm = ({ id }: Account) => {
     openReview();
   });
 
-  // useEffect(() => {
-  //   if (!selectedToken) {
-  //     setSelectedToken(tokenList[0]);
-  //   }
-  // }, [selectedToken, tokenList]);
+  useEffect(() => {
+    if (!selectedToken) {
+      setSelectedToken(tokenList[0]);
+    }
+  }, [selectedToken, tokenList]);
 
   return (
     <form onSubmit={onSubmit}>
@@ -87,7 +87,7 @@ const BorrowForm = ({ id }: Account) => {
           }}
         />
       </FormControl>
-      <FormControl isInvalid={Boolean(errors.borrowAmount?.message)} marginBottom={'0.75rem'}>
+      <FormControl isInvalid={Boolean(errors.borrowAmount?.message)} marginBottom={"0.75rem"}>
         <FormLabel>Borrow Amount</FormLabel>
         <InputGroup size="lg" width="auto" height="4rem">
           <Input
@@ -136,9 +136,7 @@ const BorrowForm = ({ id }: Account) => {
         <InputGroup size="lg" width="auto" height="4rem">
           <Select
             isRequired={true}
-            onChange={(e) => {
-              setInterestMode(e.target.value as EInterestMode);
-            }}
+            onChange={(e) => { setInterestMode(e.target.value as EInterestMode) }}
             value={interestMode}
           >
             <option value={EInterestMode.STABLE}>Stable</option>
@@ -147,16 +145,8 @@ const BorrowForm = ({ id }: Account) => {
         </InputGroup>
       </FormControl>
       <Button
-        // isDisabled={!isConnected || chain?.unsupported}
-        // type="submit"
-        onClick={() =>
-          setSelectedToken(
-            () =>
-              tokenList.find(
-                (token) => token.address === '0xe9DcE89B076BA6107Bb64EF30678efec11939234'
-              ) as TokenListContextItem
-          )
-        }
+        isDisabled={!isConnected || chain?.unsupported}
+        type="submit"
         size="lg"
         mt=".75rem"
         width="100%"
@@ -165,9 +155,10 @@ const BorrowForm = ({ id }: Account) => {
       </Button>
       {selectedToken && (
         <ReviewBorrowTransactionModal
-          isOpen={!!selectedToken}
-          onClose={() => setSelectedToken(null)}
+          isOpen={isReviewOpen}
+          onClose={closeReview}
           id={id}
+          contract={contract}
           token={selectedToken}
           amount={tokenAmount}
           onSubmitClick={() => {
@@ -191,12 +182,13 @@ type ReviewBorrowTransactionModalProps = {
   amount: string;
   onSubmitClick: () => void;
   interestMode: EInterestMode;
+  contract: string
 };
 
-const amt = BigNumber.from(5);
-const account = '0xd7EA16B6dd857381275C4EB5F416d9Cba521b5E4'; // from "accounts" method of erc1655registry
-const tokenId = '9'; // nft id that gets minted when we create a new account
-const INTERESTMODE = BigNumber.from(2);
+// const amt = BigNumber.from(5);
+// const account = '0xd7EA16B6dd857381275C4EB5F416d9Cba521b5E4'; // from "accounts" method of erc1655registry
+// const tokenId = '9'; // nft id that gets minted when we create a new account
+// const INTERESTMODE = BigNumber.from(2);
 
 const ReviewBorrowTransactionModal = ({
   isOpen,
@@ -206,6 +198,7 @@ const ReviewBorrowTransactionModal = ({
   token,
   onSubmitClick,
   interestMode,
+  contract
 }: ReviewBorrowTransactionModalProps) => {
   const { txNotify } = useNotifications();
   const { isExecuting, executeRecipe } = useRailgunTx();
@@ -219,24 +212,23 @@ const ReviewBorrowTransactionModal = ({
   const doSubmit = useCallback(async () => {
     if (!token.address || !token.decimals) throw new Error('bad form');
     try {
-      alert('calling borrow!!');
       setError(undefined);
       console.log(id);
       console.log({
-        account,
+        account: contract,
         asset: token.address, // usdc address
-        amount: amt, // just 1 usdc
+        amount: tokenAmount, // just 1 usdc
         action: TxnType.BORROW, // deposit action
         // decimal: token.decimals, // 6
-        interestRateMode: INTERESTMODE,
+        interestRateMode: interestMode,
       });
       const borrowRecipe = new AaveV3BorrowRecipe({
-        account,
+        account: contract,
         asset: token.address, // usdc address
-        amount: amt, // just 1 usdc
+        amount: tokenAmount, // just 1 usdc
         action: TxnType.BORROW, // deposit action
         decimal: token.decimals, // 6
-        interestRateMode: INTERESTMODE,
+        interestRateMode: BigNumber.from(interestMode),
       });
       const tx = await executeRecipe(borrowRecipe, {
         networkName: network.railgunNetworkName,
@@ -244,7 +236,7 @@ const ReviewBorrowTransactionModal = ({
           {
             nftTokenType: NFTTokenType.ERC721,
             nftAddress: REGISTRY_CONTRACT_ADDRESS,
-            tokenSubID: tokenId,
+            tokenSubID: id,
             amountString: '1',
           },
         ],

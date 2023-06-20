@@ -200,7 +200,6 @@ const ReviewDepositTransactionModal = ({
       setError(undefined);
 
       console.log(contract, tokenAmount, id)
-      alert('here')
 
       const depositRecipe = new AaveV3DepositRecipe({
         account: contract,
