@@ -2,6 +2,7 @@
   "name": "railgun-shielder",
   "private": true,
   "version": "0.1.0",
+  "type": "module",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -10,17 +11,18 @@
     "checkFormat": "yarn prettier --check . ",
     "format": "yarn prettier --write .",
     "export": "yarn build && next export",
-    "clean-run": "rm -r .next && yarn dev"
+    "clean-run": "rm -r .next && yarn dev",
+    "test": "mocha --loader=ts-node/esm --config ./.mocharc.json"
   },
   "dependencies": {
     "@chakra-ui/icons": "^2.0.17",
     "@chakra-ui/react": "^2.4.6",
     "@emotion/react": "^11",
     "@emotion/styled": "^11",
-    "@railgun-community/cookbook": "file:../cookbook",
+    "@railgun-community/cookbook": "git://github.com/venture23-zkp/railgun_cookbook#72bffb6b200c9408a7fb18d90fcf6a41c82e91dd",
     "@railgun-community/engine": "^4.3.5",
-    "@railgun-community/quickstart": "file:../quickstart",
-    "@railgun-community/shared-models": "file:../shared-models",
+    "@railgun-community/quickstart": "git://github.com/venture23-zkp/quickstart#cf7e0ee1dbbc15d956dcb68aebf51fe3a4afad40",
+    "@railgun-community/shared-models": "git://github.com/venture23-zkp/shared-models#7ccbdb5b291e233923f97add438f856b2e18c660",
     "@rainbow-me/rainbowkit": "^0.8.1",
     "browser-level": "^1.0.1",
     "ethers": "^5.0.0",
@@ -35,21 +37,25 @@
     "react-hook-form": "^7.42.1",
     "snarkjs": "^0.6.11",
     "swr": "^2.0.0",
+    "ts-node": "^10.9.1",
     "wagmi": "^0.9.0"
   },
   "devDependencies": {
     "@trivago/prettier-plugin-sort-imports": "^4.0.0",
+    "@types/chai": "^4.3.5",
+    "@types/chai-as-promised": "^7.1.5",
+    "@types/expect": "^24.3.0",
     "@types/level-js": "^4.0.2",
+    "@types/mocha": "^10.0.1",
     "@types/node": "^17.0.35",
     "@types/react": "^18.0.9",
     "@typescript-eslint/eslint-plugin": "^5.49.0",
+    "chai": "^4.3.7",
+    "chai-as-promised": "^7.1.1",
     "eslint": "^8.15.0",
     "eslint-config-next": "^13.0.3",
+    "mocha": "^10.2.0",
     "prettier": "^2.8.1",
     "typescript": "^4.7.2"
-  },
-  "volta": {
-    "node": "18.12.1",
-    "yarn": "3.3.1"
   }
 }

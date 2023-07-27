@@ -1,6 +1,6 @@
 import { Contract, PopulatedTransaction } from '@ethersproject/contracts';
-import { abi } from '@/abi-typechain/abi';
-import { validateAddress } from '@/components/integrations/aave-v3/utils/address';
+import { abi } from '../abi-typechain/abi';
+import { validateAddress } from '../components/integrations/aave-v3/utils/address';
 import { BigNumber } from '@ethersproject/bignumber';
 import { BaseProvider } from '@ethersproject/providers';
 import { ERC6551Registry } from '../abi-typechain/ERC6551Registry/ERC6551Registry';

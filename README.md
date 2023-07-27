@@ -1,5 +1,13 @@
 This is a [RainbowKit](https://rainbowkit.com) + [wagmi](https://wagmi.sh) + [Next.js](https://nextjs.org/) project bootstrapped with [`create-rainbowkit`](https://github.com/rainbow-me/rainbowkit/tree/main/packages/create-rainbowkit).
 
+## Having Troubles installing node_modules?
+- Use npm instead of yarn
+- In rare cases, you might be forced to install deps with node v14.x.x and run with v16.x.x
+- You can try run the following commands before installing the deps.
+```sh
+git config --global url."https://".insteadOf git://
+```
+
 ## Getting Started
 
 First, run the development server and add missing environment variables:
@@ -10,12 +18,19 @@ cp $(pwd)/env.sample $(pwd)/.env
 ```
 
 ```bash
-yarn run dev
+npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
 You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+
+## Learn More
+
+Running unit tests
+```bash
+npm run test
+```
 
 ## Learn More
 

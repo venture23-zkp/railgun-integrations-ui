@@ -1,8 +1,8 @@
 import { BigNumber } from '@ethersproject/bignumber';
 import { Step, StepInput, UnvalidatedStepOutput } from '@railgun-community/cookbook';
 import { NFTTokenType } from '@railgun-community/shared-models';
-import { ERC6551_Registry } from '@/contract/erc-6551-registry-contract';
-import { provider } from '@/utils/networks';
+import { ERC6551_Registry } from '../../../../../contract/erc-6551-registry-contract';
+import { provider } from '../../../../../utils/networks';
 import { BytesLike } from 'ethers';
 
 export type RegistryCreateAccountData = {

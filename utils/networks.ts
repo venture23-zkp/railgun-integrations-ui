@@ -6,8 +6,8 @@ import { BigNumber } from 'ethers';
 import { Chain, configureChains } from 'wagmi';
 import { arbitrum, bsc, goerli, mainnet, polygon } from 'wagmi/chains';
 import { publicProvider } from 'wagmi/providers/public';
-import { celoIcon, ethAddress } from '@/utils/constants';
-import { bscIcon } from '@/utils/constants';
+import { celoIcon, ethAddress } from './constants';
+import { bscIcon } from './constants';
 
 const celoAlfajores = {
   id: 44787,

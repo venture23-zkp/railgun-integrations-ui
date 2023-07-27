@@ -1,0 +1,6 @@
+{
+  "require": ["ts-node/register"],
+  "spec": ["components/integrations/aave-v3/steps/**/__tests__/*.spec.ts"],
+  "timeout": 10000,
+  "exit": true
+}

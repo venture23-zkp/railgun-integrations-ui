@@ -1,6 +1,6 @@
-import ABI_ACM from './acm/ACM.json';
-import ABI_ERC6551Registry from './ERC6551Registry/ERC6551Registry.json';
-import ABI_Default_Account from './DefaultERC6551Account/DefaultERC6551Account.json';
+import ABI_ACM from './acm/ACM.json' assert { type: "json" };
+import ABI_ERC6551Registry from './ERC6551Registry/ERC6551Registry.json' assert { type: "json" };
+import ABI_Default_Account from './DefaultERC6551Account/DefaultERC6551Account.json' assert { type: "json" };
 
 
 export const abi = {
