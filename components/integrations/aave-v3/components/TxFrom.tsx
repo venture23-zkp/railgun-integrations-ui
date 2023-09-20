@@ -19,6 +19,7 @@ import BorrowForm from './BorrowForm';
 import DepositForm from './DepositForm';
 import RepayForm from './RepayForm';
 import WithdrawForm from './WithdrawForm';
+import TokenTransferForm from './TokenTransferForm';
 import AcmAccount from '@/types/AcmAccount';
 
 const TxFrom = ({
@@ -43,14 +44,14 @@ const TxFrom = ({
       />
       <Tabs variant="soft-rounded" colorScheme="teal">
         <TabList>
-          <Tab>Deposit</Tab>
+          <Tab>Token Transfer</Tab>
           <Tab>Withdraw</Tab>
           <Tab>Borrow</Tab>
           <Tab>Repay</Tab>
         </TabList>
         <TabPanels>
           <TabPanel>
-            <DepositForm {...account} />
+            <TokenTransferForm {...account} />
           </TabPanel>
           <TabPanel>
             <WithdrawForm {...account} />

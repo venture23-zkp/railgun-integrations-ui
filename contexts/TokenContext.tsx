@@ -37,7 +37,7 @@ const initialContext = {
   tokenAllowances: new Map(),
   shieldingFees: {},
   unshieldingFees: {},
-  refreshBalances: async () => { },
+  refreshBalances: async () => {},
 };
 
 const TokenContext = createContext<TokenContextType>(initialContext);
@@ -102,7 +102,7 @@ export const TokenListProvider = ({
       }
       const tokenList: TokenListContextItem[] = await Promise.all(
         data.map(async (token) => {
-          console.log("fetching balance!!!! ", wallet)
+          console.log('fetching balance!!!! ', wallet);
           const balance = await wallet?.getBalance(
             {
               id: chainId,
@@ -110,6 +110,10 @@ export const TokenListProvider = ({
             },
             token.address
           );
+
+          if (token.address === '0x65aFADD39029741B3b8f0756952C74678c9cEC93')
+            console.log('THIS IS THE BALANCE::: ', balance);
+
           return {
             ...token,
             privateBalance: balance === undefined ? null : BigNumber.from(balance),

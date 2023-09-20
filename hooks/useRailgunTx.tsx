@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { parseUnits } from '@ethersproject/units';
 import { Recipe, RecipeInput } from '@railgun-community/cookbook';
+import { setRailgunFees } from '@railgun-community/cookbook';
 import {
   gasEstimateForUnprovenCrossContractCalls,
   gasEstimateForUnprovenTransfer,
@@ -27,7 +28,6 @@ import {
   deserializeTransaction,
   serializeUnsignedTransaction,
 } from '@railgun-community/shared-models';
-import { setRailgunFees } from "@railgun-community/cookbook";
 import { ethers } from 'ethers';
 import { isAddress } from 'ethers/lib/utils.js';
 import { useSigner } from 'wagmi';
@@ -381,7 +381,7 @@ const useRailgunTx = () => {
     return await signer!.sendTransaction(transactionRequest);
   };
 
-  const transfer = async (args: TokenTransferType) => {
+  const transfer = async (args: TokenTransferType[]) => {
     setIsExecuting(true);
     try {
       const resp = await _transfer(args);
@@ -393,20 +393,24 @@ const useRailgunTx = () => {
     }
   };
 
-  const _transfer = async ({ address, amount, recipient, decimals }: TokenTransferType) => {
-    const memoText = '';
+  const _transfer = async (recipients: TokenTransferType[]) => {
+    const memoText = ''; // this can be used for remarks
 
     // Formatted token amounts and recipients.
-    const erc20AmountRecipients: RailgunERC20AmountRecipient[] = [
-      {
+    const erc20AmountRecipients: RailgunERC20AmountRecipient[] = [];
+
+    for (let recipientObj of recipients) {
+      const { address, amount, recipient, decimals } = recipientObj;
+
+      if (!validateRailgunAddress(recipient)) {
+        throw new Error(`Not a valid railgun 0zk address: '${recipient}'`);
+      }
+
+      erc20AmountRecipients.push({
         tokenAddress: address!,
         amountString: ethers.utils.parseUnits(amount, decimals).toHexString(), // must be hex
         recipientAddress: recipient!, // RAILGUN address
-      },
-    ];
-
-    if (!validateRailgunAddress(recipient)) {
-      throw new Error(`Not a valid railgun 0zk address: '${recipient}'`);
+      });
     }
 
     // Gas price, used to calculate Relayer Fee iteratively.
@@ -464,7 +468,6 @@ const useRailgunTx = () => {
       progressCallback
     );
     if (generateTransferProofError) {
-      // Proof generated successfully.
       throw new Error(generateTransferProofError);
     }
 
@@ -482,6 +485,20 @@ const useRailgunTx = () => {
       ...originalGasDetailsSerialized,
       gasEstimateString,
     };
+
+    // console.log(
+    //   'PARAM::: ',
+    //   network,
+    //   wallet?.id!,
+    //   false,
+    //   memoText,
+    //   erc20AmountRecipients,
+    //   [], // nftAmountRecipients
+    //   relayerFeeERC20AmountRecipient,
+    //   sendWithPublicWallet,
+    //   overallBatchMinGasPrice,
+    //   gasDetailsSerialized
+    // );
 
     const {
       nullifiers,
@@ -524,19 +541,11 @@ const useRailgunTx = () => {
         nfts: relayAdaptUnshieldNFTAmounts,
       } = input;
 
-      setRailgunFees(
-        networkName,
-        '25',
-        '25',
-      );
+      setRailgunFees(networkName, '25', '25');
 
       const recipeOutput = await recipe.getRecipeOutput(input);
 
-      const {
-        populatedTransactions,
-        erc20Amounts,
-        nfts: relayAdaptShieldNFTs,
-      } = recipeOutput;
+      const { populatedTransactions, erc20Amounts, nfts: relayAdaptShieldNFTs } = recipeOutput;
 
       const crossContractCallsSerialized = populatedTransactions.map(serializeUnsignedTransaction);
 
@@ -562,7 +571,7 @@ const useRailgunTx = () => {
       // true for self-signing, false for Relayer
       const sendWithPublicWallet = true;
 
-      console.log(relayAdaptUnshieldERC20Amounts, relayAdaptShieldERC20Addresses)
+      console.log(relayAdaptUnshieldERC20Amounts, relayAdaptShieldERC20Addresses);
       // const { gasEstimateString, error: gasEstimateForUnprovenCrossContractCallsError } =
       //   await gasEstimateForUnprovenCrossContractCalls(
       //     networkName,
@@ -661,7 +670,7 @@ const useRailgunTx = () => {
 
       // send transactionRequest to Relay.sol
       return await signer!.sendTransaction(transactionRequest);
-    } catch(err) {
+    } catch (err) {
       throw err;
     } finally {
       setIsExecuting(false);
