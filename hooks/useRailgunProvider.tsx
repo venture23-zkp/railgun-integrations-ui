@@ -10,7 +10,7 @@ import {
   setProviderForNetwork,
   startRailgunEngine,
   stopRailgunEngine,
-} from '@railgun-community/quickstart';
+} from '@railgun-community/wallet';
 import { BrowserLevel } from 'browser-level';
 import { BigNumber } from 'ethers';
 import localforage from 'localforage';

@@ -1,4 +1,4 @@
-import { getRailgunSmartWalletContractForNetwork } from '@railgun-community/quickstart';
+import { getRailgunSmartWalletContractForNetwork } from '@railgun-community/wallet';
 import { readContract } from '@wagmi/core';
 import useSWR from 'swr';
 import { erc20ABI, useAccount, useNetwork } from 'wagmi';

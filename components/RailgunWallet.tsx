@@ -32,10 +32,11 @@ import {
 } from '@chakra-ui/react';
 import { RailgunWalletInfo } from '@railgun-community/shared-models';
 import { randomBytes } from 'crypto';
-import { entropyToMnemonic, isValidMnemonic } from 'ethers/lib/utils.js';
+import { Mnemonic } from 'ethers';
 import { useRailgunWallet } from '@/contexts/RailgunWalletContext';
 import { shortenAddress } from '@/utils/address';
 
+const { entropyToPhrase, isValidMnemonic } = Mnemonic;
 
 export const SelectRailgunWallet = () => {
   const {
@@ -159,7 +160,7 @@ const RailgunAddWalletModal = ({ isOpen, onClose }: UseModalProps) => {
   const toast = useToast();
 
   const generateMenmonic = useCallback(() => {
-    setMenmonic(entropyToMnemonic(randomBytes(16)));
+    setMenmonic(entropyToPhrase(randomBytes(16)));
   }, []);
 
   const handleSubmit = useCallback(

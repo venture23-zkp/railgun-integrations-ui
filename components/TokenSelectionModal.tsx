@@ -12,11 +12,10 @@ import {
   ModalHeader,
   ModalOverlay,
 } from '@chakra-ui/modal';
-import { IconButton, useDisclosure, Tag } from '@chakra-ui/react';
+import { IconButton, Tag, useDisclosure } from '@chakra-ui/react';
 import { Spinner } from '@chakra-ui/spinner';
 import { Address } from 'abitype';
-import { BigNumber, FixedNumber, ethers } from 'ethers';
-import { formatUnits, isAddress } from 'ethers/lib/utils.js';
+import { FixedNumber, formatUnits, isAddress, getAddress } from 'ethers';
 import Fuse from 'fuse.js';
 import localforage from 'localforage';
 import { useAccount, useBalance, useNetwork, useToken as useWagmiToken } from 'wagmi';
@@ -26,17 +25,17 @@ import { TokenListContextItem } from '@/contexts/TokenContext';
 import useLocalForageSet from '@/hooks/useLocalForageSet';
 import useNotifications from '@/hooks/useNotifications';
 import { TokenListItem } from '@/hooks/useTokenList';
+import TokenFilterType from '@/types/TokenFilterType';
 import { CUSTOM_TOKENS_STORAGE_KEY, ipfsDomain, rebaseTokens } from '@/utils/constants';
 import { parseIPFSUri } from '@/utils/ipfs';
 import { getNetwork } from '@/utils/networks';
-import TokenFilterType from '@/types/TokenFilterType';
 
 type TokenSelectionModalProps = {
   isOpen: boolean;
   onClose: () => void;
   onSelect: (arg0: TokenListContextItem) => void; // eslint-disable-line no-unused-vars
   exclude?: string[];
-  tokenFilter?: TokenFilterType
+  tokenFilter?: TokenFilterType;
 };
 
 type TokenSelectionItemProps = {
@@ -52,8 +51,8 @@ type CustomTokenSelectionItemProps = {
 };
 
 const TokenSelectionItem = ({ token, onClick, isBalanceLoading }: TokenSelectionItemProps) => {
-  const tokenBalance = token?.balance || BigNumber.from(0);
-  const privateBalance = token?.privateBalance || BigNumber.from(0);
+  const tokenBalance = token?.balance || BigInt(0);
+  const privateBalance = token?.privateBalance || BigInt(0);
   return (
     <Flex
       justify="space-between"
@@ -84,32 +83,26 @@ const TokenSelectionItem = ({ token, onClick, isBalanceLoading }: TokenSelection
         <Text fontSize="md">{token.name}</Text>
         <Text fontSize="xs">{token.symbol}</Text>
       </Flex>
-      <Flex direction="row" align={"center"} justifyContent={'flex-end'} gap={'10px'}>
-        {
-          token.aaveSupported &&
-          <Tag
-            size={'sm'}
-            variant='solid'
-            colorScheme='green'
-            left="-40px"
-          >
+      <Flex direction="row" align={'center'} justifyContent={'flex-end'} gap={'10px'}>
+        {token.aaveSupported && (
+          <Tag size={'sm'} variant="solid" colorScheme="green" left="-40px">
             Aave
           </Tag>
-        }
+        )}
         <Flex direction="column" align="flex-end">
           {isBalanceLoading ? (
             <Spinner />
           ) : (
             <>
               <Text fontSize="md">
-                {FixedNumber.from(
+                {FixedNumber.fromString(
                   formatUnits(tokenBalance.toString() || '0', token?.decimals || 0).toString()
                 )
                   .round(4)
                   .toString() || 0}
               </Text>
               <Text fontSize="xs">
-                {FixedNumber.from(
+                {FixedNumber.fromString(
                   formatUnits(privateBalance.toString() || '0', token?.decimals || 0).toString()
                 )
                   .round(4)
@@ -323,7 +316,7 @@ const TokenSelectionModal = (props: TokenSelectionModalProps) => {
           <Flex direction="column" paddingTop="1rem">
             {results.length === 0 && isAddress(searchTerm) ? (
               <CustomTokenSelectionItem
-                tokenAddress={ethers.utils.getAddress(searchTerm)}
+                tokenAddress={getAddress(searchTerm) as `0x${string}`}
                 key={1}
                 onSelect={props.onSelect}
               />

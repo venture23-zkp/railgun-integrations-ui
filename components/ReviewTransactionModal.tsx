@@ -17,10 +17,10 @@ import {
   getRailgunSmartWalletContractForNetwork,
   getShieldPrivateKeySignatureMessage,
   validateRailgunAddress,
-} from '@railgun-community/quickstart';
+} from '@railgun-community/wallet';
 import { erc20ABI } from '@wagmi/core';
-import { BigNumber, ethers } from 'ethers';
-import { isAddress, parseUnits } from 'ethers/lib/utils.js';
+// import { BigNumber } from 'ethers';
+import { ethers, formatUnits, isAddress, parseUnits, toBigInt } from 'ethers';
 import { useSWRConfig } from 'swr';
 import { useContractWrite, useNetwork, usePrepareContractWrite } from 'wagmi';
 import { useRailgunWallet } from '@/contexts/RailgunWalletContext';
@@ -31,6 +31,8 @@ import useTokenAllowance from '@/hooks/useTokenAllowance';
 import { shortenAddress } from '@/utils/address';
 import { ethAddress } from '@/utils/constants';
 import { getNetwork } from '@/utils/networks';
+
+// const { isAddress, parseUnits }
 
 type ReviewTransactionModalProps = {
   isOpen: boolean;
@@ -68,7 +70,7 @@ const ReviewTransactionModal = ({
     functionName: 'approve',
     args: [
       getRailgunSmartWalletContractForNetwork(network.railgunNetworkName).address as `0x{string}`,
-      ethers.utils.parseUnits(tokenAmount || '0', token.decimals),
+      parseUnits(tokenAmount || '0', token.decimals),
     ],
   });
 
@@ -76,20 +78,17 @@ const ReviewTransactionModal = ({
   const [isApprovalLoading, setIsApprovalLoading] = useState(false);
   const { tokenAllowances, tokenList } = useToken();
   const { data } = useTokenAllowance({ address: token.address || '' });
-  const tokenAllowance = tokenAllowances.get(token.address || '') || data || BigNumber.from(0);
+  const tokenAllowance = tokenAllowances.get(token.address || '') || data || toBigInt(0);
   const needsApproval =
-    token.address !== ethAddress &&
-    ethers.utils.parseUnits(tokenAmount || '0', token.decimals).gt(tokenAllowance);
+    token.address !== ethAddress && parseUnits(tokenAmount || '0', token.decimals) > tokenAllowance;
   const { wallet } = useRailgunWallet();
   const bigNumberAmount = parseUnits(tokenAmount! || '0', tokenDecimals);
   const shieldFee = shieldingFees[chain?.id || 1] || shieldingFees[1];
   const unshieldFee = unshieldingFees[chain?.id || 1] || unshieldingFees[1];
-  const shieldFeeAmount = parseUnits(tokenAmount! || '0', tokenDecimals)
-    .mul(shieldFee)
-    .div(10000);
-  const unshieldFeeAmount = parseUnits(tokenAmount! || '0', tokenDecimals)
-    .mul(unshieldFee)
-    .div(10000);
+  const shieldFeeAmount =
+    (parseUnits(tokenAmount! || '0', tokenDecimals) * shieldFee) / BigInt(10000);
+  const unshieldFeeAmount =
+    (parseUnits(tokenAmount! || '0', tokenDecimals) * unshieldFee) / BigInt(10000);
 
   const [isBaseToken, setIsBaseToken] = useState(false);
   const [recipientIsSelf, setRecipientIsSelf] = useState(false);
@@ -116,7 +115,7 @@ const ReviewTransactionModal = ({
     let { privateBalance } = token;
     const { decimals, balance } = token;
 
-    const amt = ethers.utils.parseUnits(amount, decimals);
+    const amt = parseUnits(amount, decimals);
     if (isBaseToken) {
       const wToken = tokenList.find(({ address }) => address === network.wethAddress);
       if (wToken) {
@@ -149,7 +148,7 @@ const ReviewTransactionModal = ({
 
   const doSubmit = async (
     // eslint-disable-next-line no-unused-vars
-    execute: (args: TokenTransferType) => Promise<ethers.providers.TransactionResponse>
+    execute: (args: TokenTransferType) => Promise<ethers.TransactionResponse>
   ) => {
     if (!token.address || !amount || !token.decimals || !recipient) throw new Error('bad form');
     try {
@@ -215,7 +214,7 @@ const ReviewTransactionModal = ({
                   Amount
                 </Heading>
                 <Text size="sm">
-                  {ethers.utils.formatUnits(bigNumberAmount, token.decimals)} {token.symbol}
+                  {formatUnits(bigNumberAmount, token.decimals)} {token.symbol}
                 </Text>
               </Flex>
               {showTransferButton && (
@@ -224,7 +223,7 @@ const ReviewTransactionModal = ({
                     Transfer fee
                   </Heading>
                   <Text size="sm">
-                    {ethers.utils.formatUnits('0', token.decimals)} {token.symbol}
+                    {formatUnits('0', token.decimals)} {token.symbol}
                   </Text>
                 </Flex>
               )}
@@ -234,7 +233,7 @@ const ReviewTransactionModal = ({
                     Shielding fee
                   </Heading>
                   <Text size="sm">
-                    {ethers.utils.formatUnits(shieldFeeAmount, token.decimals)} {token.symbol}
+                    {formatUnits(shieldFeeAmount, token.decimals)} {token.symbol}
                   </Text>
                 </Flex>
               )}
@@ -244,7 +243,7 @@ const ReviewTransactionModal = ({
                     Unshielding fee
                   </Heading>
                   <Text size="sm">
-                    {ethers.utils.formatUnits(unshieldFeeAmount, token.decimals)} {token.symbol}
+                    {formatUnits(unshieldFeeAmount, token.decimals)} {token.symbol}
                   </Text>
                 </Flex>
               )}

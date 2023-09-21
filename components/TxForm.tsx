@@ -7,7 +7,7 @@ import { Input, InputGroup } from '@chakra-ui/input';
 import { Box, Flex, Text } from '@chakra-ui/layout';
 import { useDisclosure } from '@chakra-ui/react';
 import { Textarea } from '@chakra-ui/textarea';
-import { validateRailgunAddress } from '@railgun-community/quickstart';
+import { validateRailgunAddress } from '@railgun-community/wallet';
 import { GetNetworkResult, watchNetwork } from '@wagmi/core';
 import { BigNumber } from 'ethers';
 import { isAddress, parseUnits } from 'ethers/lib/utils.js';

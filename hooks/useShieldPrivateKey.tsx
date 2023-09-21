@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getShieldPrivateKeySignatureMessage } from '@railgun-community/quickstart';
+import { getShieldPrivateKeySignatureMessage } from '@railgun-community/wallet';
 import { Signer } from 'ethers';
 import { keccak256 } from 'ethers/lib/utils.js';
 import { useAccount, useSigner } from 'wagmi';

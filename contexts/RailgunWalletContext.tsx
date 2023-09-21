@@ -1,18 +1,20 @@
 import React, { ReactNode, createContext, useCallback, useContext, useState } from 'react';
 import { RailgunWallet } from '@railgun-community/engine';
+import { ChainType, RailgunWalletInfo, networkForChain } from '@railgun-community/shared-models';
 import {
   createRailgunWallet,
   fullWalletForID,
   loadWalletByID,
   refreshRailgunBalances,
-} from '@railgun-community/quickstart';
-import { ChainType, RailgunWalletInfo, networkForChain } from '@railgun-community/shared-models';
+} from '@railgun-community/wallet';
 import { randomBytes } from 'crypto';
-import { entropyToMnemonic, isValidMnemonic } from 'ethers/lib/utils.js';
+import { Mnemonic } from 'ethers';
 import { useNetwork } from 'wagmi';
 import { fetchBlockNumber } from 'wagmi/actions';
 import useLocalForageGet from '@/hooks/useLocalForageGet';
 import useLocalForageSet from '@/hooks/useLocalForageSet';
+
+const { entropyToPhrase, isValidMnemonic } = Mnemonic;
 
 const ENCRYPTION_KEY_SALT = 'railgunWalletEncryptionKeySalt';
 const RAILGUN_WALLET_LIST_STORAGE_KEY = 'railgunWalletList';
@@ -77,7 +79,7 @@ export const RailgunWalletProvider = ({ children }: { children: ReactNode }) => 
   const createWallet: RailgunWalletContextType['createWallet'] = useCallback(
     async (password: string, mnemonic?: string) => {
       if (!mnemonic) {
-        mnemonic = entropyToMnemonic(randomBytes(16));
+        mnemonic = entropyToPhrase(randomBytes(16));
       }
       if (!isValidMnemonic(mnemonic)) {
         throw new Error(`Invalid mnemonic: '${mnemonic}'!`);
@@ -100,22 +102,29 @@ export const RailgunWalletProvider = ({ children }: { children: ReactNode }) => 
         return { ...acc, [name]: number };
       }, {});
 
-      const { error, railgunWalletInfo: info } = await createRailgunWallet(
-        encryptionKey,
-        mnemonic,
-        creationBlockNumbers
-      );
-      if (error || !info) {
-        throw new Error(`Failed to createRailgunWallet! ${error}`);
+      try {
+        const { id, railgunAddress } = await createRailgunWallet(
+          encryptionKey,
+          mnemonic,
+          creationBlockNumbers
+        );
+        if (!id || !railgunAddress) {
+          throw new Error(`Failed to createRailgunWallet!`);
+        }
+
+        const info = { id, railgunAddress };
+
+        if (!walletExists(id)) {
+          await setItem<RailgunWalletInfo[]>({
+            path: RAILGUN_WALLET_LIST_STORAGE_KEY,
+            key: `localForageGet-${RAILGUN_WALLET_LIST_STORAGE_KEY}`,
+            value: [info!, ...(walletList || [])],
+          });
+        }
+        return { info, mnemonic };
+      } catch (err) {
+        throw new Error(`Failed to createRailgunWallet! ${err}`);
       }
-      if (!walletExists(info?.id)) {
-        await setItem<RailgunWalletInfo[]>({
-          path: RAILGUN_WALLET_LIST_STORAGE_KEY,
-          key: `localForageGet-${RAILGUN_WALLET_LIST_STORAGE_KEY}`,
-          value: [info!, ...(walletList || [])],
-        });
-      }
-      return { info, mnemonic };
     },
     [chains, setItem, walletExists, walletList]
   );
@@ -126,8 +135,10 @@ export const RailgunWalletProvider = ({ children }: { children: ReactNode }) => 
         return;
       }
       const encryptionKey = await sha256WithSalt(password);
-      const { error } = await loadWalletByID(encryptionKey, walletId, false);
-      if (error) {
+
+      try {
+        await loadWalletByID(encryptionKey, walletId, false);
+      } catch (error) {
         throw new Error(`selectWallet: ${error}`);
       }
       setWallet(fullWalletForID(walletId));
@@ -139,12 +150,9 @@ export const RailgunWalletProvider = ({ children }: { children: ReactNode }) => 
   const refreshBalances = useCallback(
     async (fullRescan: boolean = false) => {
       if (!wallet?.id) return;
-      const { error } = await refreshRailgunBalances(
-        { type: ChainType.EVM, id: chainId },
-        wallet?.id,
-        fullRescan
-      );
-      if (error) {
+      try {
+        await refreshRailgunBalances({ type: ChainType.EVM, id: chainId }, wallet?.id, fullRescan);
+      } catch (error) {
         throw new Error(`refreshBalances(${wallet?.id}): ${error}`);
       }
     },

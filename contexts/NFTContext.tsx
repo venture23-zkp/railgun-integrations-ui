@@ -1,6 +1,6 @@
 import React, { ReactNode, createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { Balances, TokenType } from '@railgun-community/engine';
-import { parseRailgunTokenAddress } from '@railgun-community/quickstart';
+import { parseRailgunTokenAddress } from '@railgun-community/wallet';
 import { ChainType } from '@railgun-community/shared-models';
 import { BigNumber } from 'ethers';
 import { useNetwork } from 'wagmi';
