@@ -9,8 +9,7 @@ import { useDisclosure } from '@chakra-ui/react';
 import { Textarea } from '@chakra-ui/textarea';
 import { validateRailgunAddress } from '@railgun-community/wallet';
 import { GetNetworkResult, watchNetwork } from '@wagmi/core';
-import { BigNumber } from 'ethers';
-import { isAddress, parseUnits } from 'ethers/lib/utils.js';
+import { isAddress, parseUnits } from 'ethers';
 import { useAccount, useNetwork } from 'wagmi';
 import ReviewTransactionModal from '@/components/ReviewTransactionModal';
 import TokenInput from '@/components/TokenInput';
@@ -187,9 +186,8 @@ export const TxForm = ({ recipientAddress }: { recipientAddress?: string }) => {
                     }
 
                     return (
-                      Boolean(
-                        parseUnits(value || '0', selectedToken?.decimals).gt(BigNumber.from('0'))
-                      ) || 'Amount must be greater than 0'
+                      Boolean(parseUnits(value || '0', selectedToken?.decimals) > BigInt('0')) ||
+                      'Amount must be greater than 0'
                     );
                   } catch (e) {
                     return 'Not a valid number';

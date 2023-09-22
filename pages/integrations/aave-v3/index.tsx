@@ -11,9 +11,9 @@ import TxFrom from '@/components/integrations/aave-v3/components/TxFrom';
 import AcmAccountType from '@/types/AcmAccount';
 import { EAaveToken, useAaveToken } from '@/contexts/AaveTokenContext';
 import { FixedNumber } from 'ethers';
-import { formatUnits } from 'ethers/lib/utils.js';
+import { formatUnits } from 'ethers';
 import { useNetwork } from 'wagmi';
-import { networks } from '@/utils/networks.ts';
+// import { networks } from '@/utils/networks.ts';
 
 type ACMAccountListProps = {
   // eslint-disable-next-line no-unused-vars

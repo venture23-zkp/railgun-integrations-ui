@@ -19,7 +19,6 @@ import {
   validateRailgunAddress,
 } from '@railgun-community/wallet';
 import { erc20ABI } from '@wagmi/core';
-// import { BigNumber } from 'ethers';
 import { ethers, formatUnits, isAddress, parseUnits, toBigInt } from 'ethers';
 import { useSWRConfig } from 'swr';
 import { useContractWrite, useNetwork, usePrepareContractWrite } from 'wagmi';

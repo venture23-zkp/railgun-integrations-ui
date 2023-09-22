@@ -53,7 +53,7 @@ const TxFrom = ({
           <TabPanel>
             <TokenTransferForm {...account} />
           </TabPanel>
-          <TabPanel>
+          {/* <TabPanel>
             <WithdrawForm {...account} />
           </TabPanel>
           <TabPanel>
@@ -61,7 +61,7 @@ const TxFrom = ({
           </TabPanel>
           <TabPanel>
             <RepayForm {...account} />
-          </TabPanel>
+          </TabPanel> */}
         </TabPanels>
       </Tabs>
       <Card>

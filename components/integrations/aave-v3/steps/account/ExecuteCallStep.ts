@@ -6,13 +6,12 @@ import {
   UnvalidatedStepOutput,
 } from '@railgun-community/cookbook';
 import { DefaultAccount } from '@/contract/default-account-contract';
-import { Address } from '../../utils/address';
-import { Bytes } from 'ethers';
 
 export type CallData = {
   to: string;
   value: BigNumber;
-  data: Bytes;
+  // data: Bytes;
+  data: any
 };
  
 
