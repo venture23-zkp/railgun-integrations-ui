@@ -1,7 +1,8 @@
 import { Link } from '@chakra-ui/layout';
 import { AlertStatus } from '@chakra-ui/react';
 import { ToastPosition, useToast } from '@chakra-ui/toast';
-import { useProvider } from 'wagmi';
+import { usePublicClient } from 'wagmi';
+import { waitForTransaction } from 'wagmi/actions';
 import { getEtherscanUrl } from '@/utils/networks';
 
 const toastDefaultArgs = {
@@ -10,7 +11,7 @@ const toastDefaultArgs = {
 };
 
 const useNotifications = () => {
-  const provider = useProvider();
+  const provider = usePublicClient();
   const toast = useToast();
 
   const notifyUser = ({
@@ -38,7 +39,7 @@ const useNotifications = () => {
 
   // TODO: Based on the umbra implementation of BNC and untested
   const txNotify = async (txHash: string) => {
-    const { chainId } = await provider.getNetwork();
+    const chainId = await provider.getChainId();
     const href = getEtherscanUrl(txHash, chainId);
     const toastId = toast({
       ...toastDefaultArgs,
@@ -53,7 +54,7 @@ const useNotifications = () => {
       status: 'loading',
     });
 
-    const { status } = await provider.waitForTransaction(txHash);
+    const { status } = await waitForTransaction({ hash: txHash as `0x${string}` });
     toast.update(toastId, {
       ...toastDefaultArgs,
       description: status ? (

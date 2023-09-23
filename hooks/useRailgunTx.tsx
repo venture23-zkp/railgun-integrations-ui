@@ -7,9 +7,9 @@ import {
   RailgunERC20Amount,
   RailgunERC20AmountRecipient,
   TransactionGasDetails, // deserializeTransaction,
-  serializeUnsignedTransaction,
 } from '@railgun-community/shared-models';
 import {
+  gasEstimateForShield,
   gasEstimateForUnprovenCrossContractCalls,
   gasEstimateForUnprovenTransfer,
   gasEstimateForUnprovenUnshield,
@@ -29,7 +29,7 @@ import {
 import { error } from 'console';
 import { Provider, ethers, parseUnits } from 'ethers';
 import { isAddress } from 'ethers';
-import { useSigner, useProvider } from 'wagmi';
+import { usePublicClient, useWalletClient } from 'wagmi';
 import { useNetwork } from 'wagmi';
 import { useRailgunWallet } from '@/contexts/RailgunWalletContext';
 import useShieldPrivateKey from '@/hooks/useShieldPrivateKey';
@@ -44,8 +44,8 @@ export type TokenTransferType = {
 };
 
 const useRailgunTx = () => {
-  const { data: signer } = useSigner();
-  const provider = useProvider();
+  const { data: signer } = useWalletClient();
+  const provider = usePublicClient();
   const { shieldPrivateKey, getShieldPrivateKey } = useShieldPrivateKey();
   const { chain } = useNetwork();
   const chainId = chain?.id || 1; // default to mainnet if no chain id
@@ -74,7 +74,7 @@ const useRailgunTx = () => {
 
     const wrappedERC20Amount: RailgunERC20Amount = {
       tokenAddress: wethAddress, // wETH
-      amountString: parseUnits(amount!, decimals).toHexString(), // hexadecimal amount
+      amount: parseUnits(amount!, decimals), // hexadecimal amount
     };
 
     try {
@@ -116,23 +116,40 @@ const useRailgunTx = () => {
       },
     ];
 
-    const { transaction, nullifiers } = await populateShield(
+    // Public wallet to shield from.
+    const [addr] = (await signer?.getAddresses()) || [];
+
+    const { gasEstimate } = await gasEstimateForShield(
       network,
       shieldPrivateKey,
       erc20AmountRecipients,
-      [] // nftAmountRecipients
+      [], // nftAmountRecipients
+      addr
+    );
+
+    const gasDetails: TransactionGasDetails = {
+      evmGasType: EVMGasType.Type2, // Depends on the chain (BNB uses type 0)
+      gasEstimate,
+      maxFeePerGas: BigInt('0x100000'), // Current gas Max Fee
+      maxPriorityFeePerGas: BigInt('0x010000'), // Current gas Max Priority Fee
+    };
+
+    const { transaction } = await populateShield(
+      network,
+      shieldPrivateKey,
+      erc20AmountRecipients,
+      [], // nftAmountRecipients
+      gasDetails
     ).catch((error) => {
       throw error;
     });
 
-    const { chain } = NETWORK_CONFIG[network];
+    const transactionRequest: ethers.TransactionRequest = transaction;
 
-    const transactionRequest: ethers.TransactionRequest = transaction
+    transactionRequest.from = addr as `0x${string}`;
 
-    // Public wallet to shield from.
-    transactionRequest.from = await signer?.getAddress();
-
-    return signer!.sendTransaction(transactionRequest);
+    const hash = await signer!.sendTransaction(transactionRequest as any);
+    return { hash };
   };
 
   const unshield = async (args: TokenTransferType) => {
@@ -153,11 +170,9 @@ const useRailgunTx = () => {
     //   tokenAddress: wethAddress, // wETH
     //   amountString: parseUnits(amount!, decimals).toHexString(), // hexadecimal amount
     // };
-
     // if (!isAddress(recipient)) {
     //   throw new Error(`Not a valid public 0x address: '${recipient}'`);
     // }
-
     // // Gas price, used to calculate Relayer Fee iteratively.
     // const feeData = await signer?.getFeeData();
     // const originalGasDetails: TransactionGasDetails = {
@@ -167,11 +182,9 @@ const useRailgunTx = () => {
     //   maxPriorityFeePerGasString: feeData?.maxPriorityFeePerGas?.toHexString() || '0x010000', // Current gas Max Priority Fee
     // };
     // const feeTokenDetails = undefined;
-
     // // Whether to use a Relayer or self-signing wallet.
     // // true for self-signing, false for Relayer.
     // const sendWithPublicWallet = true;
-
     // const { gasEstimateString, error: gasEstimateForUnprovenUnshieldBaseTokenError } =
     //   await gasEstimateForUnprovenUnshieldBaseToken(
     //     network,
@@ -186,18 +199,14 @@ const useRailgunTx = () => {
     // if (gasEstimateForUnprovenUnshieldBaseTokenError || gasEstimateString === undefined) {
     //   throw new Error(gasEstimateForUnprovenUnshieldBaseTokenError || 'No gasEstimateString!');
     // }
-
     // const relayerFeeERC20AmountRecipient = undefined;
-
     // // Minimum gas price, only required for relayed transaction.
     // const overallBatchMinGasPrice: string = '0x10000';
-
     // const progressCallback = (progress: number) => {
     //   // Handle proof progress (show in UI).
     //   // Proofs can take 20-30 seconds on slower devices.
     //   console.log('progress', progress);
     // };
-
     // const { error: generateUnshieldBaseTokenProofError } = await generateUnshieldBaseTokenProof(
     //   network,
     //   recipient,
@@ -213,10 +222,8 @@ const useRailgunTx = () => {
     //   // Proof generated successfully.
     //   throw new Error(generateUnshieldBaseTokenProofError);
     // }
-
     // // NOTE: Must follow proof generation.
     // // Use the exact same parameters as proof or this will throw invalid error.
-
     // // // Gas to use for the transaction.
     // // const gasDetailsSerialized: TransactionGasDetailsSerialized = {
     // //   evmGasType: EVMGasType.Type2, // Depends on the chain (BNB uses type 0)
@@ -228,7 +235,6 @@ const useRailgunTx = () => {
     //   ...originalGasDetailsSerialized,
     //   gasEstimateString,
     // };
-
     // const {
     //   nullifiers,
     //   serializedTransaction,
@@ -247,16 +253,11 @@ const useRailgunTx = () => {
     //   // Error populating transaction.
     //   throw new Error(populateProvedUnshieldBaseTokenError || 'No serializedTransaction!');
     // }
-
     // console.log('nullifiers:', nullifiers);
-
     // const nonce = await signer?.getTransactionCount();
-
     // const transactionRequest = deserializeTransaction(serializedTransaction, nonce, chainId);
-
     // // Public wallet to shield from.
     // transactionRequest.from = await signer?.getAddress();
-
     // // send transactionRequest to Relay.sol
     // return await signer!.sendTransaction(transactionRequest);
   };
@@ -265,7 +266,6 @@ const useRailgunTx = () => {
     // if (!isAddress(recipient)) {
     //   throw new Error(`Not a valid public 0x address: '${recipient}'`);
     // }
-
     // const erc20AmountRecipients: RailgunERC20AmountRecipient[] = [
     //   {
     //     tokenAddress: address, // wETH
@@ -273,7 +273,6 @@ const useRailgunTx = () => {
     //     recipientAddress: recipient,
     //   },
     // ];
-
     // // Gas price, used to calculate Relayer Fee iteratively.
     // const feeData = await signer?.getFeeData();
     // const originalGasDetailsSerialized: TransactionGasDetailsSerialized = {
@@ -283,11 +282,9 @@ const useRailgunTx = () => {
     //   maxPriorityFeePerGasString: feeData?.maxPriorityFeePerGas?.toHexString() || '0x010000', // Current gas Max Priority Fee
     // };
     // const feeTokenDetails = undefined;
-
     // // Whether to use a Relayer or self-signing wallet.
     // // true for self-signing, false for Relayer.
     // const sendWithPublicWallet = true;
-
     // const { gasEstimateString, error: gasEstimateForUnprovenUnshieldError } =
     //   await gasEstimateForUnprovenUnshield(
     //     network,
@@ -302,18 +299,14 @@ const useRailgunTx = () => {
     // if (gasEstimateForUnprovenUnshieldError || gasEstimateString === undefined) {
     //   throw new Error(gasEstimateForUnprovenUnshieldError || 'No gasEstimateString!');
     // }
-
     // const relayerFeeERC20AmountRecipient = undefined;
-
     // // Minimum gas price, only required for relayed transaction.
     // const overallBatchMinGasPrice: string = '0x10000';
-
     // const progressCallback = (progress: number) => {
     //   // Handle proof progress (show in UI).
     //   // Proofs can take 20-30 seconds on slower devices.
     //   console.log('progress', progress);
     // };
-
     // const { error: generateUnshieldProofError } = await generateUnshieldProof(
     //   network,
     //   wallet?.id!,
@@ -329,10 +322,8 @@ const useRailgunTx = () => {
     //   // Proof generated successfully.
     //   throw new Error(generateUnshieldProofError);
     // }
-
     // // NOTE: Must follow proof generation.
     // // Use the exact same parameters as proof or this will throw invalid error.
-
     // // // Gas to use for the transaction.
     // // const gasDetailsSerialized: TransactionGasDetailsSerialized = {
     // //   evmGasType: EVMGasType.Type2, // Depends on the chain (BNB uses type 0)
@@ -344,7 +335,6 @@ const useRailgunTx = () => {
     //   ...originalGasDetailsSerialized,
     //   gasEstimateString,
     // };
-
     // const {
     //   nullifiers,
     //   serializedTransaction,
@@ -363,16 +353,11 @@ const useRailgunTx = () => {
     //   // Error populating transaction.
     //   throw new Error(populateProvedUnshieldError || 'No serializedTransaction!');
     // }
-
     // console.log('nullifiers:', nullifiers);
-
     // const nonce = await signer?.getTransactionCount();
-
     // const transactionRequest = deserializeTransaction(serializedTransaction, nonce, chainId);
-
     // // Public wallet to shield from.
     // transactionRequest.from = await signer?.getAddress();
-
     // // send transactionRequest to Relay.sol
     // return await signer!.sendTransaction(transactionRequest);
   };
@@ -390,100 +375,102 @@ const useRailgunTx = () => {
   };
 
   const _transfer = async (recipients: TokenTransferType[]) => {
-    const memoText = ''; // this can be used for remarks
-
-    // Formatted token amounts and recipients.
-    const erc20AmountRecipients: RailgunERC20AmountRecipient[] = [];
-
-    for (let recipientObj of recipients) {
-      const { address, amount, recipient, decimals } = recipientObj;
-
-      if (!validateRailgunAddress(recipient)) {
-        throw new Error(`Not a valid railgun 0zk address: '${recipient}'`);
-      }
-
-      erc20AmountRecipients.push({
-        tokenAddress: address!,
-        amount: parseUnits(amount, decimals), // must be hex
-        recipientAddress: recipient!, // RAILGUN address
-      });
-    }
-
-    // Gas price, used to calculate Relayer Fee iteratively.
-    const feeData = await signer?.getFeeData();
-    const originalGasDetailsSerialized: TransactionGasDetails = {
-      evmGasType: EVMGasType.Type2, // Depends on the chain (BNB uses type 0)
-      gasEstimateString: '0x00', // Always 0, we don't have this yet.
-      maxFeePerGasString: feeData?.maxFeePerGas?.toHexString() || '0x100000', // Current gas Max Fee
-      maxPriorityFeePerGasString: feeData?.maxPriorityFeePerGas?.toHexString() || '0x010000', // Current gas Max Priority Fee
-    };
-    const feeTokenDetails = undefined;
-
-    // Whether to use a Relayer or self-signing wallet.
-    // true for self-signing, false for Relayer.
-    const sendWithPublicWallet = true;
-
-    const { gasEstimateString, error: gasEstimateForUnprovenTransferError } =
-      await gasEstimateForUnprovenTransfer(
-        network,
-        wallet?.id!,
-        encryptionKey!,
-        memoText,
-        erc20AmountRecipients,
-        [], // nftAmountRecipients
-        originalGasDetailsSerialized,
-        feeTokenDetails,
-        sendWithPublicWallet
-      );
-    if (gasEstimateForUnprovenTransferError || gasEstimateString === undefined) {
-      throw new Error(gasEstimateForUnprovenTransferError || 'No gasEstimateString!');
-    }
-
-    const relayerFeeERC20AmountRecipient = undefined;
-
-    // Minimum gas price, only required for relayed transaction.
-    const overallBatchMinGasPrice: string = '0x10000';
-
-    const progressCallback = (progress: number) => {
-      // Handle proof progress (show in UI).
-      // Proofs can take 20-30 seconds on slower devices.
-      console.log('progress', progress);
-    };
-
-    const { error: generateTransferProofError } = await generateTransferProof(
-      network,
-      wallet?.id!,
-      encryptionKey!,
-      false,
-      memoText,
-      erc20AmountRecipients,
-      [], // nftAmountRecipients
-      relayerFeeERC20AmountRecipient,
-      sendWithPublicWallet,
-      overallBatchMinGasPrice,
-      progressCallback
-    );
-    if (generateTransferProofError) {
-      throw new Error(generateTransferProofError);
-    }
-
-    // NOTE: Must follow proof generation.
-    // Use the exact same parameters as proof or this will throw invalid error.
-
-    // // Gas to use for the transaction.
-    // const gasDetailsSerialized: TransactionGasDetailsSerialized = {
+    // const memoText = ''; // this can be used for remarks
+    // // Formatted token amounts and recipients.
+    // const erc20AmountRecipients: RailgunERC20AmountRecipient[] = [];
+    // for (let recipientObj of recipients) {
+    //   const { address, amount, recipient, decimals } = recipientObj;
+    //   if (!validateRailgunAddress(recipient)) {
+    //     throw new Error(`Not a valid railgun 0zk address: '${recipient}'`);
+    //   }
+    //   erc20AmountRecipients.push({
+    //     tokenAddress: address!,
+    //     amount: parseUnits(amount, decimals), // must be hex
+    //     recipientAddress: recipient!, // RAILGUN address
+    //   });
+    // }
+    // // Gas price, used to calculate Relayer Fee iteratively.
+    // const feeData = await signer?.getFeeData();
+    // const originalGasDetailsSerialized: TransactionGasDetails = {
     //   evmGasType: EVMGasType.Type2, // Depends on the chain (BNB uses type 0)
-    //   gasEstimateString: "0x0100", // Output from gasEstimateForDeposit
-    //   maxFeePerGasString: "0x100000", // Current gas Max Fee
-    //   maxPriorityFeePerGasString: "0x010000", // Current gas Max Priority Fee
+    //   gasEstimateString: '0x00', // Always 0, we don't have this yet.
+    //   maxFeePerGasString: feeData?.maxFeePerGas?.toHexString() || '0x100000', // Current gas Max Fee
+    //   maxPriorityFeePerGasString: feeData?.maxPriorityFeePerGas?.toHexString() || '0x010000', // Current gas Max Priority Fee
     // };
-    const gasDetailsSerialized: TransactionGasDetailsSerialized = {
-      ...originalGasDetailsSerialized,
-      gasEstimateString,
-    };
-
-    // console.log(
-    //   'PARAM::: ',
+    // const feeTokenDetails = undefined;
+    // // Whether to use a Relayer or self-signing wallet.
+    // // true for self-signing, false for Relayer.
+    // const sendWithPublicWallet = true;
+    // const { gasEstimateString, error: gasEstimateForUnprovenTransferError } =
+    //   await gasEstimateForUnprovenTransfer(
+    //     network,
+    //     wallet?.id!,
+    //     encryptionKey!,
+    //     memoText,
+    //     erc20AmountRecipients,
+    //     [], // nftAmountRecipients
+    //     originalGasDetailsSerialized,
+    //     feeTokenDetails,
+    //     sendWithPublicWallet
+    //   );
+    // if (gasEstimateForUnprovenTransferError || gasEstimateString === undefined) {
+    //   throw new Error(gasEstimateForUnprovenTransferError || 'No gasEstimateString!');
+    // }
+    // const relayerFeeERC20AmountRecipient = undefined;
+    // // Minimum gas price, only required for relayed transaction.
+    // const overallBatchMinGasPrice: string = '0x10000';
+    // const progressCallback = (progress: number) => {
+    //   // Handle proof progress (show in UI).
+    //   // Proofs can take 20-30 seconds on slower devices.
+    //   console.log('progress', progress);
+    // };
+    // const { error: generateTransferProofError } = await generateTransferProof(
+    //   network,
+    //   wallet?.id!,
+    //   encryptionKey!,
+    //   false,
+    //   memoText,
+    //   erc20AmountRecipients,
+    //   [], // nftAmountRecipients
+    //   relayerFeeERC20AmountRecipient,
+    //   sendWithPublicWallet,
+    //   overallBatchMinGasPrice,
+    //   progressCallback
+    // );
+    // if (generateTransferProofError) {
+    //   throw new Error(generateTransferProofError);
+    // }
+    // // NOTE: Must follow proof generation.
+    // // Use the exact same parameters as proof or this will throw invalid error.
+    // // // Gas to use for the transaction.
+    // // const gasDetailsSerialized: TransactionGasDetailsSerialized = {
+    // //   evmGasType: EVMGasType.Type2, // Depends on the chain (BNB uses type 0)
+    // //   gasEstimateString: "0x0100", // Output from gasEstimateForDeposit
+    // //   maxFeePerGasString: "0x100000", // Current gas Max Fee
+    // //   maxPriorityFeePerGasString: "0x010000", // Current gas Max Priority Fee
+    // // };
+    // const gasDetailsSerialized: TransactionGasDetailsSerialized = {
+    //   ...originalGasDetailsSerialized,
+    //   gasEstimateString,
+    // };
+    // // console.log(
+    // //   'PARAM::: ',
+    // //   network,
+    // //   wallet?.id!,
+    // //   false,
+    // //   memoText,
+    // //   erc20AmountRecipients,
+    // //   [], // nftAmountRecipients
+    // //   relayerFeeERC20AmountRecipient,
+    // //   sendWithPublicWallet,
+    // //   overallBatchMinGasPrice,
+    // //   gasDetailsSerialized
+    // // );
+    // const {
+    //   nullifiers,
+    //   serializedTransaction,
+    //   error: populateProvedTransferError,
+    // } = await populateProvedTransfer(
     //   network,
     //   wallet?.id!,
     //   false,
@@ -495,37 +482,16 @@ const useRailgunTx = () => {
     //   overallBatchMinGasPrice,
     //   gasDetailsSerialized
     // );
-
-    const {
-      nullifiers,
-      serializedTransaction,
-      error: populateProvedTransferError,
-    } = await populateProvedTransfer(
-      network,
-      wallet?.id!,
-      false,
-      memoText,
-      erc20AmountRecipients,
-      [], // nftAmountRecipients
-      relayerFeeERC20AmountRecipient,
-      sendWithPublicWallet,
-      overallBatchMinGasPrice,
-      gasDetailsSerialized
-    );
-    if (populateProvedTransferError || serializedTransaction === undefined) {
-      // Error populating transaction.
-      throw new Error(populateProvedTransferError || 'No serializedTransaction!');
-    }
-
-    const nonce = await signer?.getTransactionCount();
-
-    const transactionRequest = deserializeTransaction(serializedTransaction, nonce, chainId);
-
-    // Public wallet to shield from.
-    transactionRequest.from = await signer?.getAddress();
-
-    // send transactionRequest to Relay.sol
-    return await signer!.sendTransaction(transactionRequest);
+    // if (populateProvedTransferError || serializedTransaction === undefined) {
+    //   // Error populating transaction.
+    //   throw new Error(populateProvedTransferError || 'No serializedTransaction!');
+    // }
+    // const nonce = await signer?.getTransactionCount();
+    // const transactionRequest = deserializeTransaction(serializedTransaction, nonce, chainId);
+    // // Public wallet to shield from.
+    // transactionRequest.from = await signer?.getAddress();
+    // // send transactionRequest to Relay.sol
+    // return await signer!.sendTransaction(transactionRequest);
   };
 
   const executeRecipe = async (recipe: Recipe, input: RecipeInput) => {

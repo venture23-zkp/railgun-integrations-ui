@@ -111,7 +111,6 @@ export const NFTListProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (!hasLoaded) return;
     const fn = async () => {
-      console.log('nftListWithBalance', nftListWithBalance);
       const acm = nftListWithBalance.find(({ address }) =>address === REGISTRY_CONTRACT_ADDRESS);
       if (!acm) return;
       const tokenids = acm.privateSubIds;

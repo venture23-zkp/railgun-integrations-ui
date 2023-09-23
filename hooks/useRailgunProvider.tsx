@@ -1,36 +1,36 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ChainType } from '@railgun-community/engine';
+import { createFallbackProviderFromJsonConfig } from '@railgun-community/shared-models';
 import {
   ArtifactStore,
   Groth16,
   getEngine,
   getProver,
   loadProvider,
+  setFallbackProviderForNetwork,
   setLoggers,
-  setProviderForNetwork,
   startRailgunEngine,
   stopRailgunEngine,
 } from '@railgun-community/wallet';
 import { BrowserLevel } from 'browser-level';
-import { BigNumber } from 'ethers';
 import localforage from 'localforage';
-import { useNetwork, useProvider } from 'wagmi';
+import { useNetwork, usePublicClient } from 'wagmi';
 import { NetworkConfig, getNetwork, networks } from '@/utils/networks';
 
 // Fee is in bips, e.g. a value of 25 is a 0.25% fee.
 interface ShieldFee {
-  [chainId: number]: BigNumber;
+  [chainId: number]: BigInt;
 }
 
 const fallbackShieldingFees: ShieldFee = {};
 Object.keys(networks).forEach((chainId) => {
   // Current fees are 0.25% everywhere, so we initialize with that
-  fallbackShieldingFees[Number(chainId)] = BigNumber.from('25');
+  fallbackShieldingFees[Number(chainId)] = BigInt('25');
 });
 const fallbackUnshieldingFees: ShieldFee = {};
 Object.keys(networks).forEach((chainId) => {
   // Current fees are 0.25% everywhere, so we initialize with that
-  fallbackUnshieldingFees[Number(chainId)] = BigNumber.from('25');
+  fallbackUnshieldingFees[Number(chainId)] = BigInt('25');
 });
 
 export const useRailgunProvider = () => {
@@ -39,7 +39,7 @@ export const useRailgunProvider = () => {
   const [unshieldingFees, setunshieldingFees] = useState<ShieldFee>(fallbackUnshieldingFees);
   const { chain } = useNetwork();
   const [network, setNetwork] = useState<NetworkConfig>();
-  const provider = useProvider();
+  const provider = usePublicClient();
 
   const chainId = useMemo(() => {
     return chain?.id || 1;
@@ -51,7 +51,10 @@ export const useRailgunProvider = () => {
 
   useEffect(() => {
     if (network) {
-      setProviderForNetwork(network.railgunNetworkName, provider);
+      setFallbackProviderForNetwork(
+        network.railgunNetworkName,
+        createFallbackProviderFromJsonConfig(network.fallbackProviders)
+      );
     }
   }, [provider, network]);
 
@@ -61,7 +64,7 @@ export const useRailgunProvider = () => {
     const fn = async () => {
       await stopRailgunEngine();
 
-      const { error: startRailgunEngineError } = startRailgunEngine(
+      startRailgunEngine(
         'hi',
         // @ts-ignore
         new BrowserLevel(''),
@@ -70,17 +73,15 @@ export const useRailgunProvider = () => {
           async (path: string) => {
             return localforage.getItem(path);
           },
-          async (dir: string, path: string, item: string | Buffer) => {
+          async (dir: string, path: string, item: string | Uint8Array) => {
             await localforage.setItem(path, item);
           },
           async (path: string) => (await localforage.getItem(path)) != null
         ),
         false,
         false,
+        false // MAY NOT WORK
       );
-      if (startRailgunEngineError) {
-        throw new Error(`Failed to startRailgunEngine: ${startRailgunEngineError}`);
-      }
 
       setLoggers(console.log, console.error);
       getProver().setSnarkJSGroth16((window as any).snarkjs.groth16 as Groth16);
@@ -88,21 +89,20 @@ export const useRailgunProvider = () => {
       const network = getNetwork(chainId);
       setNetwork(network);
 
-      const { error: loadProviderError, feesSerialized } = await loadProvider(
+      const { feesSerialized } = await loadProvider(
         network.fallbackProviders,
         network.railgunNetworkName,
-        true
-      );
-      if (loadProviderError) {
-        throw new Error(`Failed to loadProvider(${chainId}): ${loadProviderError}`);
-      }
+        undefined
+      ).catch((err) => {
+        throw new Error(`Failed to loadProvider(${chainId}): ${err}`);
+      });
 
       // Set the shield/unshield fees for each network.
       const shieldingFeesFromNetwork = {
-        [chainId]: BigNumber.from(feesSerialized?.shield || fallbackShieldingFees[chainId]),
+        [chainId]: BigInt(feesSerialized?.shield) || fallbackShieldingFees[chainId],
       };
       const unshieldingFeesFromNetwork = {
-        [chainId]: BigNumber.from(feesSerialized?.unshield || fallbackUnshieldingFees[chainId]),
+        [chainId]: BigInt(feesSerialized?.unshield) || fallbackUnshieldingFees[chainId],
       };
       setShieldingFees({ ...shieldingFees, ...shieldingFeesFromNetwork });
       setunshieldingFees({ ...unshieldingFees, ...unshieldingFeesFromNetwork });

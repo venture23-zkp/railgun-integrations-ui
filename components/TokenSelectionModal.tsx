@@ -15,7 +15,7 @@ import {
 import { IconButton, Tag, useDisclosure } from '@chakra-ui/react';
 import { Spinner } from '@chakra-ui/spinner';
 import { Address } from 'abitype';
-import { FixedNumber, formatUnits, isAddress, getAddress } from 'ethers';
+import { FixedNumber, formatUnits, getAddress, isAddress } from 'ethers';
 import Fuse from 'fuse.js';
 import localforage from 'localforage';
 import { useAccount, useBalance, useNetwork, useToken as useWagmiToken } from 'wagmi';
@@ -53,6 +53,7 @@ type CustomTokenSelectionItemProps = {
 const TokenSelectionItem = ({ token, onClick, isBalanceLoading }: TokenSelectionItemProps) => {
   const tokenBalance = token?.balance || BigInt(0);
   const privateBalance = token?.privateBalance || BigInt(0);
+
   return (
     <Flex
       justify="space-between"
@@ -319,7 +320,7 @@ const TokenSelectionModal = (props: TokenSelectionModalProps) => {
                 tokenAddress={getAddress(searchTerm) as `0x${string}`}
                 key={1}
                 onSelect={props.onSelect}
-              />
+              / >
             ) : allResults.length === 0 ? (
               <EmptyTokenItem />
             ) : (

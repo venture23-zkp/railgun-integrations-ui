@@ -143,7 +143,6 @@ export const AaveTokenListProvider = ({
             accountBalances[account.id] = accountSpecificBalances;
         }
 
-        console.log(accountBalances)
         setAddressTokensWithBalances(accountBalances);
         setIsBalanceLoading(false);
     }, [accounts])

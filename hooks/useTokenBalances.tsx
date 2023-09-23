@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import { BigNumber } from '@ethersproject/bignumber';
 import { readContracts } from '@wagmi/core';
 import useSWR from 'swr';
+import { parseAbi } from 'viem';
 import { useAccount, useBalance, useNetwork } from 'wagmi';
 import { TokenListItem } from '@/hooks/useTokenList';
 import { ethAddress } from '@/utils/constants';
@@ -27,21 +28,35 @@ const useTokenBalances = ({ tokenList }: { tokenList: TokenListItem[] }) => {
       if (!tokenList || tokenList.length === 0) {
         return;
       }
+
       const readContractsArgs = tokenList
         .filter((token) => token.address !== ethAddress)
         .map((token) => {
           return {
-            abi: ERC20_ABI,
+            abi: parseAbi(ERC20_ABI),
             functionName: 'balanceOf',
-            address: token.address,
-            args: [address],
+            address: token.address as `0x${string}`,
+            args: [address as `0x${string}`],
           };
         });
       const data = await readContracts({
         contracts: readContractsArgs,
       });
+
       const tokenListWithUserBalance = Promise.all(
-        tokenList.map(async (token, i) => {
+        tokenList.slice(1).map(async (token, i) => {
+          // hadlilng expectional case
+          if (!data[i])
+            return {
+              ...token,
+              balance: 0n,
+            };
+
+          let { result, status, error } = data[i];
+          if (status === 'failure') throw error;
+
+          // Converting to eth
+
           if (token.address === ethAddress)
             return {
               ...token,
@@ -49,10 +64,11 @@ const useTokenBalances = ({ tokenList }: { tokenList: TokenListItem[] }) => {
             };
           return {
             ...token,
-            balance: data[i - 1] as BigNumber | null, // Subtract 1 because the native token is the first token and is handled by the conditional above
+            balance: result as bigint | null, // Subtract 1 because the native token is the first token and is handled by the conditional above
           };
         })
       );
+
       return tokenListWithUserBalance;
     }
   );

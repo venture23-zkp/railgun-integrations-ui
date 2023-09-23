@@ -5,16 +5,16 @@ import { ChakraProvider } from '@chakra-ui/react';
 import { extendTheme } from '@chakra-ui/theme-utils';
 import { RainbowKitProvider, getDefaultWallets } from '@rainbow-me/rainbowkit';
 import '@rainbow-me/rainbowkit/styles.css';
-import { WagmiConfig, createClient } from 'wagmi';
+import { WagmiConfig, createConfig } from 'wagmi';
 import Footer from '@/components/Footer';
 import Header from '@/components/Header';
+import { AaveTokenListProvider } from '@/contexts/AaveTokenContext';
 import { NFTListProvider } from '@/contexts/NFTContext';
 import { RailgunWalletProvider } from '@/contexts/RailgunWalletContext';
 import { TokenListProvider } from '@/contexts/TokenContext';
 import { useRailgunProvider } from '@/hooks/useRailgunProvider';
 import '@/styles/globals.css';
-import { chains, provider, webSocketProvider } from '@/utils/networks';
-import { AaveTokenListProvider } from '@/contexts/AaveTokenContext';
+import { chains, publicClient, webSocketPublicClient } from '@/utils/networks';
 
 const APP_TITLE = 'Railgun Integration UI';
 
@@ -32,17 +32,17 @@ const theme = extendTheme({ colors });
 const { connectors } = getDefaultWallets({
   appName: APP_TITLE,
   chains,
+  projectId: '4ee10a25835bedc51b47c9b2955508e5',
 });
 
-const wagmiClient = createClient({
+const wagmiConfig = createConfig({
   autoConnect: true,
   connectors,
-  provider,
-  webSocketProvider,
+  publicClient,
+  webSocketPublicClient,
 });
 
 function MyApp({ Component, pageProps }: AppProps) {
-  const { isProviderLoaded, shieldingFees, unshieldingFees } = useRailgunProvider();
   return (
     <>
       <Head>
@@ -64,45 +64,52 @@ function MyApp({ Component, pageProps }: AppProps) {
           content="privacy, private, shield, railgun, tokens, ethereum, bsc, polygon, arbitrum, goerli"
         />
       </Head>
-      <WagmiConfig client={wagmiClient}>
-        <RainbowKitProvider chains={chains}>
-          <ChakraProvider theme={theme}>
-            {isProviderLoaded && (
-              <RailgunWalletProvider>
-                <TokenListProvider shieldingFees={shieldingFees} unshieldingFees={unshieldingFees}>
-                  <NFTListProvider>
-                    <AaveTokenListProvider>
-                      <Grid
-                        templateAreas={`". header ."
-                                  ". body ."
-									                ". footer ."
-										`}
-                        gridTemplateRows={'4.8rem 1fr 4.8rem'}
-                        gridTemplateColumns={'1fr minmax(auto, 150rem) 1fr'}
-                        gap="1"
-                        h="100vh"
-                        marginX="1rem"
-                      >
-                        <GridItem area={'header'}>
-                          <Header />
-                        </GridItem>
-                        <GridItem area={'body'}>
-                          <Component {...pageProps} />
-                        </GridItem>
-                        <GridItem area={'footer'}>
-                          <Footer />
-                        </GridItem>
-                      </Grid>
-                    </AaveTokenListProvider>
-                  </NFTListProvider>
-                </TokenListProvider>
-              </RailgunWalletProvider>
-            )}
-          </ChakraProvider>
-        </RainbowKitProvider>
+      <WagmiConfig config={wagmiConfig}>
+        <WagmiDependentComp Component={Component} pageProps={pageProps} />
       </WagmiConfig>
     </>
   );
 }
+
+const WagmiDependentComp = ({ Component, pageProps }: AppProps) => {
+  const { isProviderLoaded, shieldingFees, unshieldingFees } = useRailgunProvider();
+  return (
+    <RainbowKitProvider chains={chains}>
+      <ChakraProvider theme={theme}>
+        {isProviderLoaded && (
+          <RailgunWalletProvider>
+            <TokenListProvider shieldingFees={shieldingFees} unshieldingFees={unshieldingFees}>
+              <NFTListProvider>
+                <AaveTokenListProvider>
+                  <Grid
+                    templateAreas={`". header ."
+                                  ". body ."
+									                ". footer ."
+										`}
+                    gridTemplateRows={'4.8rem 1fr 4.8rem'}
+                    gridTemplateColumns={'1fr minmax(auto, 150rem) 1fr'}
+                    gap="1"
+                    h="100vh"
+                    marginX="1rem"
+                  >
+                    <GridItem area={'header'}>
+                      <Header />
+                    </GridItem>
+                    <GridItem area={'body'}>
+                      <Component {...pageProps} />
+                    </GridItem>
+                    <GridItem area={'footer'}>
+                      <Footer />
+                    </GridItem>
+                  </Grid>
+                </AaveTokenListProvider>
+              </NFTListProvider>
+            </TokenListProvider>
+          </RailgunWalletProvider>
+        )}
+      </ChakraProvider>
+    </RainbowKitProvider>
+  );
+};
 
 export default MyApp;

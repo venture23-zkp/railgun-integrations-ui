@@ -2,7 +2,6 @@ import { isHexString } from '@ethersproject/bytes';
 import { NetworkName } from '@railgun-community/shared-models';
 import { EVMGasType } from '@railgun-community/shared-models';
 import { FallbackProviderJsonConfig } from '@railgun-community/shared-models';
-import { BigNumber } from 'ethers';
 import { Chain, configureChains } from 'wagmi';
 import { arbitrum, bsc, goerli, mainnet, polygon } from 'wagmi/chains';
 import { publicProvider } from 'wagmi/providers/public';
@@ -20,6 +19,9 @@ const celoAlfajores = {
   },
   rpcUrls: {
     default: {
+      http: ['https://alfajores-forno.celo-testnet.org'],
+    },
+    public: {
       http: ['https://alfajores-forno.celo-testnet.org'],
     },
   },
@@ -55,6 +57,9 @@ const polygonMumbai = {
     },
     default: {
       http: ["https://polygon-mumbai.g.alchemy.com/v2/demo"]
+    },
+    public: {
+      http: ["https://polygon-mumbai.g.alchemy.com/v2/demo"]
     }
   },
   blockExplorers: {
@@ -65,7 +70,7 @@ const polygonMumbai = {
     default: {
       name: "PolygonScan",
       url: "https://rpc.ankr.com/polygon_mumbai"
-    }
+    },
   },
   contracts: {
     multicall3: {
@@ -77,7 +82,7 @@ const polygonMumbai = {
 } satisfies Chain;
 
 // Configure supported networks.
-export const { chains, provider, webSocketProvider } = configureChains(
+export const { chains, publicClient, webSocketPublicClient } = configureChains(
   [
     mainnet,
     arbitrum,
@@ -121,7 +126,7 @@ export const networks = {
     },
     fallbackProviders: {
       chainId: mainnet.id,
-      providers: [{ provider: getRpcUrl(mainnet.id), priority: 1, weight: 1 }],
+      providers: [{ provider: "https://eth.llamarpc.com", priority: 1, weight: 2 }],
     },
   },
   [goerli.id]: {
@@ -137,7 +142,7 @@ export const networks = {
     },
     fallbackProviders: {
       chainId: goerli.id,
-      providers: [{ provider: getRpcUrl(goerli.id), priority: 1, weight: 1 }],
+      providers: [{ provider: getRpcUrl(goerli.id), priority: 1, weight: 2 }],
     },
   },
   [bsc.id]: {
@@ -153,7 +158,7 @@ export const networks = {
     },
     fallbackProviders: {
       chainId: bsc.id,
-      providers: [{ provider: getRpcUrl(bsc.id), priority: 1, weight: 1 }],
+      providers: [{ provider: getRpcUrl(bsc.id), priority: 1, weight: 2 }],
     },
   },
   [polygon.id]: {
@@ -169,7 +174,7 @@ export const networks = {
     },
     fallbackProviders: {
       chainId: polygon.id,
-      providers: [{ provider: getRpcUrl(polygon.id), priority: 1, weight: 1 }],
+      providers: [{ provider: getRpcUrl(polygon.id), priority: 1, weight: 2 }],
     },
   },
   [arbitrum.id]: {
@@ -184,7 +189,7 @@ export const networks = {
     },
     fallbackProviders: {
       chainId: arbitrum.id,
-      providers: [{ provider: getRpcUrl(arbitrum.id), priority: 1, weight: 1 }],
+      providers: [{ provider: getRpcUrl(arbitrum.id), priority: 1, weight: 2 }],
     },
   },
   [celoAlfajores.id]: {
@@ -199,7 +204,7 @@ export const networks = {
     },
     fallbackProviders: {
       chainId: celoAlfajores.id,
-      providers: [{ provider: getRpcUrl(celoAlfajores.id), priority: 1, weight: 1 }],
+      providers: [{ provider: getRpcUrl(celoAlfajores.id), priority: 1, weight: 2 }],
     },
   },
   [polygonMumbai.id]: {
@@ -215,7 +220,7 @@ export const networks = {
     },
     fallbackProviders: {
       chainId: polygonMumbai.id,
-      providers: [{ provider: getRpcUrl(polygonMumbai.id), priority: 1, weight: 1 }],
+      providers: [{ provider: getRpcUrl(polygonMumbai.id), priority: 1, weight: 2 }],
     },
   },
 } as { [key: number]: NetworkConfig };
@@ -243,8 +248,8 @@ export const buildBaseToken = (baseToken: BaseToken, chainId: number) => {
     decimals: 18,
     name: baseToken.name,
     logoURI: baseToken.logoURI,
-    balance: BigNumber.from(0),
-    privateBalance: BigNumber.from(0),
+    balance: BigInt(0),
+    privateBalance: BigInt(0),
   };
 };
 

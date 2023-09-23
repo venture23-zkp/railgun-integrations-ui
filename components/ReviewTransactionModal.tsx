@@ -121,10 +121,10 @@ const ReviewTransactionModal = ({
         privateBalance = wToken.privateBalance;
       }
     }
-    setShowShieldButton((recipientIsPrivate && balance?.gte(amt)) || false);
-    setShowUnshieldButton((recipientIsPublic && privateBalance?.gte(amt)) || false);
+    setShowShieldButton((recipientIsPrivate && balance >= amt) || false);
+    setShowUnshieldButton((recipientIsPublic && privateBalance >= amt) || false);
     setShowTransferButton(
-      (recipientIsPrivate && privateBalance?.gte(amt) && !isBaseToken && !recipientIsSelf) || false
+      (recipientIsPrivate && privateBalance >= amt && !isBaseToken && !recipientIsSelf) || false
     );
   }, [
     token,
@@ -158,6 +158,7 @@ const ReviewTransactionModal = ({
         amount,
         recipient,
       });
+
       txNotify(tx.hash);
       onClose();
       onSubmitClick();
